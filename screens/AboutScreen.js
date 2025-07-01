@@ -22,55 +22,54 @@ export default function AboutScreen({ navigation }) {
           Our app was developed by two small-time indie devs and designers,{" "}
           <Text style={styles.bold}>Paul</Text> and{" "}
           <Text style={styles.bold}>Kenson</Text>, who share a passion for
-          programming, design, and reselling. To make our tasks more fun, we
+          programming, design, and vintage camera collecting. To make our thrifting adventures more efficient, we
           decided to design an app that uses the latest AI modeling and Optical
           Character Recognition (OCR) technology to create algorithms for
-          recognizing and pricing video games.
+          recognizing and pricing vintage cameras and photography equipment.
         </Text>
 
-        <Text style={styles.subTitle}>The Game Pricing Data</Text>
+        <Text style={styles.subTitle}>The Camera Pricing Data</Text>
         <Text style={[styles.paragraph, styles.prominent]}>
-          The data for pricing the video games is based on the industry
-          standard, <Text style={styles.bold}>Pricecharting</Text>, and is
-          extremely reliable for what you can expect to get after shipping and
-          handling on sites like <Text style={styles.bold}>eBay</Text>.
+          The data for pricing vintage cameras is sourced from multiple reliable platforms including
+          <Text style={styles.bold}> KEH Camera</Text>, <Text style={styles.bold}>B&H Photo</Text>, and current
+          <Text style={styles.bold}> eBay</Text> sold listings, giving you accurate market values for
+          film cameras, digital cameras, and vintage photography equipment.
         </Text>
 
         <Text style={styles.subTitle}>How We Use It</Text>
         <Text style={styles.paragraph}>
           At the moment, this app is <Text style={styles.bold}>free</Text>, and
-          we use it ourselves to find and buy video games. Here’s how we use it:
+          we use it ourselves to hunt for vintage cameras and photography gear. Here’s how we use it:
         </Text>
         <View style={styles.list}>
           <Text style={styles.listItem}>
-            • We go into thrift shops and video game shops, take photos of video
-            games, and quickly get a price estimate.
+            • We visit thrift stores, estate sales, and camera shops, snap photos of vintage cameras,
+            and instantly get accurate pricing estimates to make smart purchasing decisions.
           </Text>
           <Text style={styles.listItem}>
-            • Another way is by dragging and dropping photos from{" "}
-            <Text style={styles.bold}>Facebook Marketplace</Text> into the app
-            to quickly get a price for each game in an entire shelf or stack in
-            seconds.
+            • We also use it with photos from{" "}
+            <Text style={styles.bold}>Facebook Marketplace</Text>, <Text style={styles.bold}>Craigslist</Text>, and{" "}
+            <Text style={styles.bold}>eBay</Text> listings
+            to quickly evaluate entire camera collections and identify underpriced gems.
           </Text>
         </View>
         <Text style={styles.paragraph}>
-          Both methods help us make over{" "}
-          <Text style={styles.bold}>$50 an hour</Text>, and they will for you,
-          too! This more than makes up for the small fee that we plan to charge
-          soon to cover our costs.
+          This systematic approach has helped us discover incredible deals on{" "}
+          <Text style={styles.bold}>Leicas, Hasselblads, Nikons</Text>, and other sought-after vintage cameras,
+          often turning our thrifting hobby into a profitable side business!
         </Text>
 
         <Text style={styles.subTitle}>Interested in Custom Software?</Text>
         <Text style={styles.paragraph}>
-          Video game shops are very interested in our product. If you own a
-          shop,{" "}
+          Camera shops and photography equipment dealers are very interested in our technology. If you own a
+          camera store or deal in vintage photography equipment,{" "}
           <Text
             style={styles.link}
-            onPress={() => Linking.openURL("mailto:support@gamesighter.com")}
+            onPress={() => Linking.openURL("mailto:support@campricer.com")}
           >
             reach out
           </Text>
-          , and perhaps we can build custom software just for you.
+          , and perhaps we can build custom pricing software tailored to your inventory needs.
         </Text>
       </View>
 
@@ -92,7 +91,7 @@ const styles = StyleSheet.create({
   },
   navLink: {
     fontSize: 16,
-    color: "#4724F5",
+    color: "#009688",
     textDecorationLine: "underline",
   },
   content: {
@@ -129,7 +128,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   link: {
-    color: "#4724F5",
+    color: "#009688",
     fontSize: 15,
     fontWeight: "500",
     letterSpacing: 0.3,
@@ -153,7 +152,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   footerLink: {
-    color: "#4724F5",
+    color: "#009688",
     textDecorationLine: "underline",
     fontSize: 14,
   },

@@ -349,7 +349,7 @@ export default function ImageUploader() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             progressViewOffset={Platform.OS === "android" ? 100 : 0}
-            colors={Platform.OS === "android" ? ["#4724F5"] : undefined}
+            colors={Platform.OS === "android" ? ["#009688"] : undefined}
           />
         }
         renderItem={({ item, index }) => (
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
 
     borderWidth: 1,
-    borderColor: "#4724F5",
+    borderColor: "#009688",
     shadowColor: "#7FFBD2", // Shadow color
     shadowOffset: { width: 5, height: 5 }, // Shadow offset
     shadowOpacity: 1, // Shadow opacity
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
     elevation: 3, // Android shadow
     borderWidth: 1, // Thin border for structure
     borderColor: "",
-    shadowColor: "#4724F5", // Shadow color
+    shadowColor: "#009688", // Shadow color
     width: "98%",
   },
   videoGameTitle: {
@@ -643,8 +643,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 30,
-    backgroundColor: "#4724F5",
-    shadowColor: "#4724F5",
+    backgroundColor: "#009688",
+    shadowColor: "#009688",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,

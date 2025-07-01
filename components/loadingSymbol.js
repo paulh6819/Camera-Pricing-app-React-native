@@ -68,7 +68,7 @@ export function LoadingSymbol() {
   // Interpolate the background color between green and purple
   const interpolatedColor = colorAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ["#7FFBD2", "#4724F5"], // Light green to purple
+    outputRange: ["#4DD0E1", "#009688"], // Light teal to teal
   });
 
   return (
