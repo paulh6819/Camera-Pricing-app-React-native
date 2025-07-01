@@ -39,6 +39,7 @@ export default function ImageUploader() {
   const [pullCount, setPullcount] = useState(0);
 
   let gameRecognitionURL = "https://www.gamesighter.com";
+  let cameraRecognitionURL = "https://www.campricer.com";
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -164,12 +165,11 @@ export default function ImageUploader() {
 
       console.log("made it past setImageUri");
 
-      await uploadMultipleImages(
+      await uploadCameraImages(
         result.assets,
         setLoading,
-
-        renderGameTitlesAndSetValueTotals,
-        gameRecognitionURL
+        renderCameraTitlesAndSetValueTotals,
+        cameraRecognitionURL
       );
       setPullcount((prev) => prev + 1);
       console.log("this is the pullcount", pullCount);
@@ -180,6 +180,48 @@ export default function ImageUploader() {
       console.error("Error picking image: ", error);
     }
   };
+
+  // Update camera state with new cameras and update the total value
+  function renderCameraTitlesAndSetValueTotals(newCameras, imageUriForUI) {
+    if (!newCameras || newCameras.length === 0) {
+      console.log("No cameras available");
+      return;
+    }
+    console.log("📷 newCameras received:", JSON.stringify(newCameras, null, 2));
+
+    const newCameraObjects = newCameras.map((camera, index) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); // Haptic feedback
+      console.log(
+        `🔍 Processing camera ${index}:`,
+        JSON.stringify(camera, null, 2)
+      );
+
+      const pricingData =
+        camera[0]?.rows?.[0] || // Standard format
+        camera[0]?.item || // Alternative format
+        {}; // Default to empty object if neither exist
+
+      return {
+        title: camera[1] || "Unknown Camera",
+        system: camera[2] || "Unknown Brand", // Brand instead of system
+        loosePrice: pricingData.loose_price || "Not available",
+        cibPrice: pricingData.cib_price || "Not available", 
+        newPrice: pricingData.new_price || "Not available",
+      };
+    });
+
+    // Add image and its cameras together
+    setUploads((prev) => [
+      { imageKey: imageUriForUI, games: newCameraObjects }, // keeping 'games' key for compatibility
+      ...prev,
+    ]);
+
+    // Update totals
+    updateTotals(newCameraObjects);
+
+    // Append raw camera data
+    setAllGames((prevGames) => [...prevGames, ...newCameraObjects]); // keeping allGames for compatibility
+  }
 
   // Update `allGames` state with new games and update the total used value
   function renderGameTitlesAndSetValueTotals(newGames, imageUriForUI) {
@@ -752,6 +794,115 @@ function alertToUsecCameraOrPickFromAGallery(setUseCamera) {
     ],
     { cancelable: true } // User can dismiss by tapping outside
   );
+}
+
+//Camera detection logic
+async function uploadCameraImages(
+  imagesArray,
+  setLoading,
+  renderCameraTitlesAndSetValueTotals,
+  cameraRecognitionURL
+) {
+  const ENABLE_WEBP = false;
+
+  setLoading(true);
+  const startTime = Date.now();
+  console.log(
+    `📷 Camera upload started at ${new Date(startTime).toLocaleTimeString()}`
+  );
+
+  try {
+    const combinedResults = [];
+
+    for (let index = 0; index < imagesArray.length; index++) {
+      const image = imagesArray[index];
+      const formData = new FormData();
+      const platformSource = Platform.OS === "ios" ? "iOS" : "Android";
+
+      // Convert to WebP for faster upload
+      const originalUri = image.uri;
+      let finalUri = originalUri;
+      let finalType = image.type || "image/jpeg";
+      let finalName = image.fileName || `uploaded_camera_${index}.jpg`;
+
+      if (ENABLE_WEBP) {
+        const webp = await ImageManipulator.manipulateAsync(image.uri, [], {
+          compress: 0.8,
+          format: ImageManipulator.SaveFormat.WEBP,
+        });
+        finalUri = webp.uri;
+        finalType = "image/webp";
+        finalName = `uploaded_camera_${index}.webp`;
+      }
+
+      const fileInfo = await FileSystem.getInfoAsync(finalUri);
+      const base64Image = await FileSystem.readAsStringAsync(finalUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const payload = {
+        image: base64Image,
+        type: image.type || "image/jpeg",
+        name: image.fileName || "uploaded_camera.jpg",
+        source: platformSource,
+      };
+
+      if (!fileInfo.exists) {
+        throw new Error(`File does not exist at URI: ${image.uri}`);
+      }
+
+      if (fileInfo.size === 0) {
+        throw new Error(`File is empty at URI: ${image.uri}`);
+      }
+
+      formData.append("image", {
+        uri: finalUri,
+        type: finalType,
+        name: finalName,
+      });
+      formData.append("source", platformSource);
+
+      console.log("📷 Uploading camera image to:", `${cameraRecognitionURL}/detectCameras`);
+
+      const response = await fetch(`${cameraRecognitionURL}/detectCameras`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: Platform.OS === "ios" ? formData : JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to upload camera image ${index}. Status: ${response.status}`
+        );
+      }
+
+      const json = await response.json();
+      const currentSingleResultFromServer = json.result || [];
+
+      renderCameraTitlesAndSetValueTotals(
+        currentSingleResultFromServer,
+        image.uri
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Error uploading camera images:",
+      error.message
+    );
+    console.error("Full camera upload error:", error);
+    console.warn(
+      `🔗 Failed camera fetch to: ${cameraRecognitionURL}/detectCameras`
+    );
+  } finally {
+    setLoading(false);
+    const endTime = Date.now();
+    const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
+    console.log(
+      `✅ Camera upload finished at ${new Date(endTime).toLocaleTimeString()}`
+    );
+    console.log(`⏱️ Camera upload time: ${durationSeconds} seconds`);
+  }
 }
 
 //This is the main logic of the app
