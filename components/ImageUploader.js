@@ -419,7 +419,7 @@ export default function ImageUploader() {
             setTotalCIBValue(0);
           }}
         >
-          <Text style={styles.clearButtonText}>Clear Games</Text>
+          <Text style={styles.clearButtonText}>Clear Results</Text>
         </TouchableOpacity>
       )}
 
