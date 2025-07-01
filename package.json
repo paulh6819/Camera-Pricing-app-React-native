@@ -1,0 +1,47 @@
+{
+  "name": "campricer-react-native",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release-ios": "eas build --platform ios --non-interactive && eas submit --platform ios --latest --non-interactive",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-navigation/native": "^7.0.14",
+    "@react-navigation/stack": "^7.4.2",
+    "expo": "53.0.13",
+    "expo-font": "^13.3.1",
+    "expo-haptics": "^14.1.4",
+    "expo-image-manipulator": "~13.1.7",
+    "expo-image-picker": "^16.1.4",
+    "expo-linear-gradient": "~14.1.5",
+    "expo-linking": "~7.1.5",
+    "expo-modules-core": "~2.4.0",
+    "expo-splash-screen": "~0.30.9",
+    "expo-status-bar": "^2.2.3",
+    "expo-store-review": "^8.1.5",
+    "expo-updates": "~0.28.15",
+    "react": "19.0.0",
+    "react-native": "0.79.4",
+    "react-native-gesture-handler": "~2.24.0",
+    "react-native-haptic-feedback": "^2.3.3",
+    "react-native-image-picker": "^7.2.3",
+    "react-native-purchases": "^8.11.6",
+    "react-native-reanimated": "^3.16.7",
+    "react-native-restart": "^0.0.27",
+    "react-native-safe-area-context": "^5.4.0",
+    "react-native-screens": "~4.11.1",
+    "react-native-uuid": "^2.0.3",
+    "react-native-vector-icons": "^10.2.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@react-native-community/cli": "^18.0.0"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "CamPricer",
+    "slug": "campricer",
+    "icon": "./assets/icons/SIGHTER-ICON-PNG.png",
+    "version": "1.1.2",
+    "orientation": "portrait",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "bundleIdentifier": "com.paulhenderson.camscout",
+      "infoPlist": {
+        "NSCameraUsageDescription": "CamPricer requires access to your camera to take photos and evaluate camera equipment for pricing.",
+        "NSPhotoLibraryUsageDescription": "CamPricer requires access to your photo library to upload images for camera equipment valuation.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.paulhenderson.camscout",
+      "permissions": [
+        "CAMERA",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "INTERNET",
+        "CAMERA",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "INTERNET"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/Minecraft.ttf"]
+        }
+      ]
+    ],
+    "assetBundlePatterns": ["**/*"],
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_YOUR_EAS_PROJECT_ID"
+      }
+    },
+    "owner": "REPLACE_WITH_YOUR_EXPO_USERNAME",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/REPLACE_WITH_YOUR_EAS_PROJECT_ID",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    }
+  }
+}
