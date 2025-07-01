@@ -313,12 +313,12 @@ export default function ImageUploader() {
       >
         <Image
           style={styles.sightIcon}
-          source={require("../assets/images/sight-icon.jpg")}
+          source={require("../assets/icons/cameraIcon.png")}
         />
       </TouchableOpacity>
       <TouchableOpacity onPress={handlePickImage} style={styles.uploadButton}>
         <View style={styles.textContainer}>
-          <Text style={styles.uploadText}>Upload or Take a Photo of Games</Text>
+          <Text style={styles.uploadText}>Upload or Take a Photo of Cameras</Text>
         </View>
       </TouchableOpacity>
       <View style={styles.loadingSymbolContainer}>

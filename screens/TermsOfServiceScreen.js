@@ -31,7 +31,7 @@ const TermsOfServiceScreen = ({ navigation }) => {
         </Text>
 
         <Section title="Introduction">
-          Welcome to Game Sighter AI! By using our services, you agree to the
+          Welcome to CamPricer AI! By using our services, you agree to the
           following terms and conditions. Please read them carefully.
         </Section>
 
@@ -42,7 +42,7 @@ const TermsOfServiceScreen = ({ navigation }) => {
         </Section>
 
         <Section title="User Responsibilities">
-          When using Game Sighter AI, you agree to:
+          When using CamPricer AI, you agree to:
           <Text>
             {"\n"}• Provide accurate information when creating an account.
           </Text>
@@ -54,7 +54,7 @@ const TermsOfServiceScreen = ({ navigation }) => {
         </Section>
 
         <Section title="Content Ownership">
-          All content created by Game Sighter AI, including code, designs, and
+          All content created by CamPricer AI, including code, designs, and
           branding, remains the property of Paul and Kenson. You may not copy or
           reproduce this content without permission.
         </Section>
@@ -71,7 +71,7 @@ const TermsOfServiceScreen = ({ navigation }) => {
         </Section>
 
         <Section title="Disclaimers">
-          Game Sighter AI is provided as-is, without warranties. We are not
+          CamPricer AI is provided as-is, without warranties. We are not
           responsible for any damages arising from the use of the app.
         </Section>
 
@@ -96,7 +96,7 @@ const TermsOfServiceScreen = ({ navigation }) => {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Game Sighter AI © 2022 – 2024</Text>
+        <Text style={styles.footerText}>CamPricer AI © 2022 – 2024</Text>
         <View style={styles.footerLinks}>
           <TouchableOpacity>
             <Text style={styles.footerLink}>Design Rationale</Text>
@@ -156,9 +156,9 @@ const styles = StyleSheet.create({
   navButton: {
     paddingVertical: 14,
     paddingHorizontal: 24,
-    backgroundColor: "#009688",
+    backgroundColor: "#6B7280",
     borderRadius: 25,
-    shadowColor: "#009688",
+    shadowColor: "#6B7280",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -238,13 +238,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginHorizontal: 12,
     padding: 12,
-    backgroundColor: "#009688",
+    backgroundColor: "#6B7280",
     borderRadius: 25,
     color: "#FFFFFF",
     textAlign: "center",
     minWidth: 45,
     minHeight: 45,
-    shadowColor: "#009688",
+    shadowColor: "#6B7280",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,

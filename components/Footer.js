@@ -22,7 +22,7 @@ export default function Footer({ navigation }) {
 
   return (
     <View style={styles.footer}>
-      <Text style={styles.footerTitle}>Game Sighter AI © 2022 – 2024</Text>
+      <Text style={styles.footerTitle}>CamPricer AI © 2022 – 2024</Text>
       <View style={styles.linksContainer}>
         <TouchableOpacity
           onPress={() =>
@@ -106,12 +106,12 @@ const styles = StyleSheet.create({
     height: 44,
     marginHorizontal: 10,
     padding: 10,
-    backgroundColor: "#009688",
+    backgroundColor: "#6B7280",
     borderRadius: 22,
     color: "#FFFFFF",
     textAlign: "center",
     textAlignVertical: "center",
-    shadowColor: "#009688",
+    shadowColor: "#6B7280",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
