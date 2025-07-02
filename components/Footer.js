@@ -22,7 +22,7 @@ export default function Footer({ navigation }) {
 
   return (
     <View style={styles.footer}>
-      <Text style={styles.footerTitle}>CamPricer AI © 2022 – 2024</Text>
+      <Text style={styles.footerTitle}>CamPricer AI © 2022 – 2025</Text>
       <View style={styles.linksContainer}>
         <TouchableOpacity
           onPress={() =>

@@ -691,14 +691,32 @@ function processCameraData(cameraData, imageUriForUI, setUploads) {
   
   console.log("📌 Camera data received:", JSON.stringify(cameraData, null, 2));
   
-  // Transform LLM response to UI format
+  // Extract and parse the JSON from the result field
+  let actualCameraData;
+  try {
+    // The result field contains markdown-wrapped JSON
+    const resultString = cameraData.result || "";
+    console.log("🔍 Raw result string:", resultString);
+    
+    // Remove markdown code blocks
+    const jsonString = resultString.replace(/```json\n?/g, '').replace(/\n?```/g, '');
+    console.log("🔍 Cleaned JSON string:", jsonString);
+    
+    // Parse the JSON
+    actualCameraData = JSON.parse(jsonString);
+    console.log("🔍 Parsed actual camera data:", JSON.stringify(actualCameraData, null, 2));
+  } catch (error) {
+    console.error("❌ Failed to parse camera data:", error);
+    actualCameraData = {}; // Fallback to empty object
+  }
+  
   const cameraObject = {
-    title: cameraData.camera || "Unknown Camera",
+    title: actualCameraData.camera || "Unknown Camera",
     system: "Camera Information", // Static label for the information section
-    loosePrice: cameraData.estimated_resale_value?.eBay || "N/A",
-    cibPrice: cameraData.estimated_resale_value?.Amazon || "N/A", 
-    newPrice: cameraData.estimated_resale_value?.Facebook_Marketplace || "N/A",
-    information: cameraData.camera_information?.information || "No information available"
+    loosePrice: actualCameraData.estimated_resale_value?.eBay || "N/A",
+    cibPrice: actualCameraData.estimated_resale_value?.Amazon || "N/A", 
+    newPrice: actualCameraData.estimated_resale_value?.Facebook_Marketplace || "N/A",
+    information: actualCameraData.camera_information?.information || "No information available"
   };
   
   console.log("🔍 Processed camera object:", JSON.stringify(cameraObject, null, 2));
