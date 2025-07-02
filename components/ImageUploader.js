@@ -168,7 +168,6 @@ export default function ImageUploader() {
         result.assets,
         setLoading,
 
-        renderGameTitlesAndSetValueTotals,
         gameRecognitionURL
       );
       setPullcount((prev) => prev + 1);
@@ -182,101 +181,101 @@ export default function ImageUploader() {
   };
 
   // Update `allGames` state with new games and update the total used value
-  function renderGameTitlesAndSetValueTotals(newGames, imageUriForUI) {
-    if (!newGames || newGames.length === 0) {
-      console.log("No games available");
-      return;
-    }
-    console.log("📌 newGames received:", JSON.stringify(newGames, null, 2));
+  // function renderGameTitlesAndSetValueTotals(newGames, imageUriForUI) {
+  //   if (!newGames || newGames.length === 0) {
+  //     console.log("No games available");
+  //     return;
+  //   }
+  //   console.log("📌 newGames received:", JSON.stringify(newGames, null, 2));
 
-    const newGameObjects = newGames.map((game, index) => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); // Haptic feedback
-      console.log(
-        `🔍 Processing game ${index}:`,
-        JSON.stringify(game, null, 2)
-      );
+  //   const newGameObjects = newGames.map((game, index) => {
+  //     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); // Haptic feedback
+  //     console.log(
+  //       `🔍 Processing game ${index}:`,
+  //       JSON.stringify(game, null, 2)
+  //     );
 
-      const pricingData =
-        game[0]?.rows?.[0] || // Standard format
-        game[0]?.item || // Alternative format
-        {}; // Default to empty object if neither exist
+  //     const pricingData =
+  //       game[0]?.rows?.[0] || // Standard format
+  //       game[0]?.item || // Alternative format
+  //       {}; // Default to empty object if neither exist
 
-      return {
-        title: game[1] || "Unknown Title",
-        system: game[2] || "Unknown System",
-        loosePrice: pricingData.loose_price || "Not available",
-        cibPrice: pricingData.cib_price || "Not available",
-        newPrice: pricingData.new_price || "Not available",
-      };
-    });
+  //     return {
+  //       title: game[1] || "Unknown Title",
+  //       system: game[2] || "Unknown System",
+  //       loosePrice: pricingData.loose_price || "Not available",
+  //       cibPrice: pricingData.cib_price || "Not available",
+  //       newPrice: pricingData.new_price || "Not available",
+  //     };
+  //   });
 
-    // Add image and its games together
-    setUploads((prev) => [
-      { imageKey: imageUriForUI, games: newGameObjects },
-      ...prev,
-    ]);
+  //   // Add image and its games together
+  //   setUploads((prev) => [
+  //     { imageKey: imageUriForUI, games: newGameObjects },
+  //     ...prev,
+  //   ]);
 
-    // Update totals
-    updateTotals(newGameObjects);
+  //   // Update totals
+  //   updateTotals(newGameObjects);
 
-    // updateTotals(newGameObjects);
+  //   // updateTotals(newGameObjects);
 
-    // Append raw game data
-    setAllGames((prevGames) => [...prevGames, ...newGameObjects]);
+  //   // Append raw game data
+  //   setAllGames((prevGames) => [...prevGames, ...newGameObjects]);
 
-    //thses are the old functions that added the total value of the games
-    // setTotalUsedValue(
-    //   (prevValue) =>
-    //     prevValue +
-    //     newGameObjects.reduce((total, game) => {
-    //       const loosePrice = parseFloat(game.loosePrice);
-    //       return total + (isNaN(loosePrice) ? 0 : loosePrice);
-    //     }, 0)
-    // );
-    // setTotalNewValue(
-    //   (prevValue) =>
-    //     prevValue +
-    //     newGameObjects.reduce((total, game) => {
-    //       const newPrice = parseFloat(game.newPrice);
-    //       return total + (isNaN(newPrice) ? 0 : newPrice);
-    //     }, 0)
-    // );
-    // setTotalCIBValue(
-    //   (prevValue) =>
-    //     prevValue +
-    //     newGameObjects.reduce((total, game) => {
-    //       const cibPrice = parseFloat(game.cibPrice);
-    //       return total + (isNaN(cibPrice) ? 0 : cibPrice);
-    //     }, 0)
-    // );
-  }
+  //   //thses are the old functions that added the total value of the games
+  //   // setTotalUsedValue(
+  //   //   (prevValue) =>
+  //   //     prevValue +
+  //   //     newGameObjects.reduce((total, game) => {
+  //   //       const loosePrice = parseFloat(game.loosePrice);
+  //   //       return total + (isNaN(loosePrice) ? 0 : loosePrice);
+  //   //     }, 0)
+  //   // );
+  //   // setTotalNewValue(
+  //   //   (prevValue) =>
+  //   //     prevValue +
+  //   //     newGameObjects.reduce((total, game) => {
+  //   //       const newPrice = parseFloat(game.newPrice);
+  //   //       return total + (isNaN(newPrice) ? 0 : newPrice);
+  //   //     }, 0)
+  //   // );
+  //   // setTotalCIBValue(
+  //   //   (prevValue) =>
+  //   //     prevValue +
+  //   //     newGameObjects.reduce((total, game) => {
+  //   //       const cibPrice = parseFloat(game.cibPrice);
+  //   //       return total + (isNaN(cibPrice) ? 0 : cibPrice);
+  //   //     }, 0)
+  //   // );
+  // }
 
-  function updateTotals(games) {
-    setTotalUsedValue(
-      (prev) =>
-        prev +
-        games.reduce(
-          (total, game) => total + (parseFloat(game.loosePrice) || 0),
-          0
-        )
-    );
-    setTotalNewValue(
-      (prev) =>
-        prev +
-        games.reduce(
-          (total, game) => total + (parseFloat(game.newPrice) || 0),
-          0
-        )
-    );
-    setTotalCIBValue(
-      (prev) =>
-        prev +
-        games.reduce(
-          (total, game) => total + (parseFloat(game.cibPrice) || 0),
-          0
-        )
-    );
-  }
+  // function updateTotals(games) {
+  //   setTotalUsedValue(
+  //     (prev) =>
+  //       prev +
+  //       games.reduce(
+  //         (total, game) => total + (parseFloat(game.loosePrice) || 0),
+  //         0
+  //       )
+  //   );
+  //   setTotalNewValue(
+  //     (prev) =>
+  //       prev +
+  //       games.reduce(
+  //         (total, game) => total + (parseFloat(game.newPrice) || 0),
+  //         0
+  //       )
+  //   );
+  //   setTotalCIBValue(
+  //     (prev) =>
+  //       prev +
+  //       games.reduce(
+  //         (total, game) => total + (parseFloat(game.cibPrice) || 0),
+  //         0
+  //       )
+  //   );
+  // }
 
   function removeUploadGame(
     uploadIndex,
@@ -425,7 +424,7 @@ export default function ImageUploader() {
         </TouchableOpacity>
       )}
 
-      {uploads.length > 0 && (
+      {/* {uploads.length > 0 && (
         <View style={styles.totalsContainer}>
           <Text style={styles.totals}>
             Total Used Value: ${totalUsedValue.toFixed(2)}
@@ -437,7 +436,7 @@ export default function ImageUploader() {
             Total New Value: ${totalNewValue.toFixed(2)}
           </Text>
         </View>
-      )}
+      )} */}
     </View>
   );
 }
@@ -761,7 +760,6 @@ async function uploadMultipleImages(
   imagesArray,
   setLoading,
 
-  renderGameTitlesAndSetValueTotals,
   gameRecognitionURL
 ) {
   const ENABLE_WEBP = false;
@@ -868,6 +866,9 @@ async function uploadMultipleImages(
         body: Platform.OS === "ios" ? formData : JSON.stringify(payload),
       });
 
+      console.log("📡 Raw response:", response);
+      console.log("📊 Response status:", response.status);
+
       if (!response.ok) {
         throw new Error(
           `Failed to upload image ${index}. Status: ${response.status}`
@@ -875,17 +876,12 @@ async function uploadMultipleImages(
       }
 
       const json = await response.json();
+      console.log("📄 Parsed JSON:", json);
       // combinedResults.push(...(json.result || [])); // ⬅️ collect data here
 
       const currentSingleResultFromServer = json.result || [];
-
-      renderGameTitlesAndSetValueTotals(
-        currentSingleResultFromServer,
-        image.uri
-      );
-    } // 🔚 This is where the closing bracket for the for loop goes
-
-    // console.log("Combined data from backend:", combinedResults);
+      console.log("🎯 Result data:", currentSingleResultFromServer);
+    }
   } catch (error) {
     console.error(
       "Error message for uploading multiple images for new function:",
@@ -895,7 +891,7 @@ async function uploadMultipleImages(
     console.warn(
       `🔗 Failed fetch to: https://www.gamesighter.com/detectLabels`
     );
-    console.warn(`🧾 Response status: ${response.status}`);
+    console.warn(`🧾 Response status: ${error.response?.status || "Unknown"}`);
     const text = await response.text();
     console.warn("🧾 Response body:", text);
   } finally {
