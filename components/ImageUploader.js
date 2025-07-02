@@ -403,7 +403,7 @@ export default function ImageUploader() {
         )}
       />
 
-      {allGames.length > 0 && (
+      {uploads.length > 0 && (
         <TouchableOpacity
           style={styles.clearButton}
           onPress={async () => {
