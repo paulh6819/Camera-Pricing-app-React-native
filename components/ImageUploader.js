@@ -359,48 +359,31 @@ export default function ImageUploader() {
               source={{ uri: item.imageKey }}
               style={styles.uploadImageMappedToResults}
             />
-            {item.games.map((game, gameIndex) => (
-              <Animated.View
-                key={`${game.title}-${gameIndex}`}
-                style={styles.gameContainer}
-                // entering={FadeIn.duration(500)}
-                exiting={FadeOut.duration(500)}
+
+            <Animated.View
+              key={`${game.title}-${gameIndex}`}
+              style={styles.gameContainer}
+              // entering={FadeIn.duration(500)}
+              exiting={FadeOut.duration(500)}
+            >
+              <TouchableOpacity
+                onPress={() =>
+                  removeUploadGame(
+                    index,
+                    gameIndex,
+                    game.loosePrice,
+                    game.cibPrice,
+                    game.newPrice
+                  )
+                }
+                style={styles.TouchableOpacityXButton}
               >
-                <Text style={styles.videoGameTitle}>{game.title}</Text>
-                <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>System:</Text> {game.system}
-                </Text>
-                <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>Used Price:</Text> $
-                  {Number(`${game.loosePrice}`).toFixed(2)}
-                </Text>
-                <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>CIB Price:</Text> $
-                  {Number(`${game.cibPrice}`).toFixed(2)}
-                </Text>
-                <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>New Price:</Text>$
-                  {Number(`${game.newPrice}`).toFixed(2)}
-                </Text>
-                <TouchableOpacity
-                  onPress={() =>
-                    removeUploadGame(
-                      index,
-                      gameIndex,
-                      game.loosePrice,
-                      game.cibPrice,
-                      game.newPrice
-                    )
-                  }
-                  style={styles.TouchableOpacityXButton}
-                >
-                  <Image
-                    source={require("../assets/images/xButton.jpeg")}
-                    style={styles.xButton}
-                  />
-                </TouchableOpacity>
-              </Animated.View>
-            ))}
+                <Image
+                  source={require("../assets/images/xButton.jpeg")}
+                  style={styles.xButton}
+                />
+              </TouchableOpacity>
+            </Animated.View>
           </View>
         )}
       />
