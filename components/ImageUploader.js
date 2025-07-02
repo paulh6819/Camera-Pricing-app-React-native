@@ -893,13 +893,11 @@ async function uploadMultipleImages(
     );
     console.error("full error object", error);
     console.warn(
-      `🔗 Failed fetch to: ${gameRecognitionURL}/identifyCamera`
+      `🔗 Failed fetch to: https://www.gamesighter.com/detectLabels`
     );
-    console.warn(`🧾 Response status: ${response?.status || 'No response'}`);
-    if (response) {
-      const text = await response.text();
-      console.warn("🧾 Response body:", text);
-    }
+    console.warn(`🧾 Response status: ${response.status}`);
+    const text = await response.text();
+    console.warn("🧾 Response body:", text);
   } finally {
     setLoading(false);
     const endTime = Date.now();
