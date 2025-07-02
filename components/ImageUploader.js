@@ -19,7 +19,6 @@ import {
   UIManager,
   Alert,
   RefreshControl,
-  FlatList,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
@@ -338,14 +337,9 @@ export default function ImageUploader() {
           <Image key={index} source={{ uri }} style={styles.uploadImage} />
         ))} */}
 
-      <FlatList
-        data={uploads}
-        keyExtractor={(item, index) => item.imageKey + index}
-        contentContainerStyle={styles.flatListContainer}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
         style={styles.scrollView}
-        maintainVisibleContentPosition={{
-          minIndexForVisible: 0,
-        }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -354,8 +348,9 @@ export default function ImageUploader() {
             colors={Platform.OS === "android" ? ["#009688"] : undefined}
           />
         }
-        renderItem={({ item, index }) => (
-          <View>
+      >
+        {uploads.map((item, index) => (
+          <View key={item.imageKey + index}>
             <Image
               source={{ uri: item.imageKey }}
               style={styles.uploadImageMappedToResults}
@@ -400,8 +395,8 @@ export default function ImageUploader() {
               </Animated.View>
             ))}
           </View>
-        )}
-      />
+        ))}
+      </ScrollView>
 
       {uploads.length > 0 && (
         <TouchableOpacity
