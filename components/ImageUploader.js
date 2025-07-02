@@ -167,7 +167,7 @@ export default function ImageUploader() {
       await uploadMultipleImages(
         result.assets,
         setLoading,
-
+        setUploads,
         gameRecognitionURL
       );
       setPullcount((prev) => prev + 1);
@@ -179,6 +179,7 @@ export default function ImageUploader() {
       console.error("Error picking image: ", error);
     }
   };
+
 
   // Update `allGames` state with new games and update the total used value
   // function renderGameTitlesAndSetValueTotals(newGames, imageUriForUI) {
@@ -359,31 +360,45 @@ export default function ImageUploader() {
               source={{ uri: item.imageKey }}
               style={styles.uploadImageMappedToResults}
             />
-
-            <Animated.View
-              key={`${game.title}-${gameIndex}`}
-              style={styles.gameContainer}
-              // entering={FadeIn.duration(500)}
-              exiting={FadeOut.duration(500)}
-            >
-              <TouchableOpacity
-                onPress={() =>
-                  removeUploadGame(
-                    index,
-                    gameIndex,
-                    game.loosePrice,
-                    game.cibPrice,
-                    game.newPrice
-                  )
-                }
-                style={styles.TouchableOpacityXButton}
+            {item.games.map((game, gameIndex) => (
+              <Animated.View
+                key={`${game.title}-${gameIndex}`}
+                style={styles.gameContainer}
+                // entering={FadeIn.duration(500)}
+                exiting={FadeOut.duration(500)}
               >
-                <Image
-                  source={require("../assets/images/xButton.jpeg")}
-                  style={styles.xButton}
-                />
-              </TouchableOpacity>
-            </Animated.View>
+                <Text style={styles.videoGameTitle}>{game.title}</Text>
+                <Text style={styles.gameDetail}>
+                  <Text style={styles.label}>eBay:</Text> {game.loosePrice}
+                </Text>
+                <Text style={styles.gameDetail}>
+                  <Text style={styles.label}>Amazon:</Text> {game.cibPrice}
+                </Text>
+                <Text style={styles.gameDetail}>
+                  <Text style={styles.label}>Facebook Marketplace:</Text> {game.newPrice}
+                </Text>
+                <Text style={styles.gameDetail}>
+                  <Text style={styles.label}>Information:</Text> {game.information}
+                </Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    removeUploadGame(
+                      index,
+                      gameIndex,
+                      game.loosePrice,
+                      game.cibPrice,
+                      game.newPrice
+                    )
+                  }
+                  style={styles.TouchableOpacityXButton}
+                >
+                  <Image
+                    source={require("../assets/images/xButton.jpeg")}
+                    style={styles.xButton}
+                  />
+                </TouchableOpacity>
+              </Animated.View>
+            ))}
           </View>
         )}
       />
@@ -667,6 +682,36 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+// Process camera data from LLM and add to UI
+function processCameraData(cameraData, imageUriForUI, setUploads) {
+  if (!cameraData) {
+    console.log("⚠️ No camera data available");
+    return;
+  }
+  
+  console.log("📌 Camera data received:", JSON.stringify(cameraData, null, 2));
+  
+  // Transform LLM response to UI format
+  const cameraObject = {
+    title: cameraData.camera || "Unknown Camera",
+    system: "Camera Information", // Static label for the information section
+    loosePrice: cameraData.estimated_resale_value?.eBay || "N/A",
+    cibPrice: cameraData.estimated_resale_value?.Amazon || "N/A", 
+    newPrice: cameraData.estimated_resale_value?.Facebook_Marketplace || "N/A",
+    information: cameraData.camera_information?.information || "No information available"
+  };
+  
+  console.log("🔍 Processed camera object:", JSON.stringify(cameraObject, null, 2));
+  
+  // Add to uploads state for UI rendering
+  setUploads((prev) => [
+    { imageKey: imageUriForUI, games: [cameraObject] }, // Using 'games' to work with existing UI
+    ...prev,
+  ]);
+  
+  console.log("✅ Camera data added to uploads");
+}
+
 async function requestPermissions() {
   const { status: camStatus, canAskAgain: canAskCam } =
     await ImagePicker.getCameraPermissionsAsync();
@@ -742,7 +787,7 @@ function alertToUsecCameraOrPickFromAGallery(setUseCamera) {
 async function uploadMultipleImages(
   imagesArray,
   setLoading,
-
+  setUploads,
   gameRecognitionURL
 ) {
   const ENABLE_WEBP = false;
@@ -860,10 +905,11 @@ async function uploadMultipleImages(
 
       const json = await response.json();
       console.log("📄 Parsed JSON:", json);
-      // combinedResults.push(...(json.result || [])); // ⬅️ collect data here
-
-      const currentSingleResultFromServer = json.result || [];
-      console.log("🎯 Result data:", currentSingleResultFromServer);
+      
+      // Process the camera data directly (no more json.result)
+      console.log("🎯 Camera data:", json);
+      
+      processCameraData(json, image.uri, setUploads);
     }
   } catch (error) {
     console.error(
