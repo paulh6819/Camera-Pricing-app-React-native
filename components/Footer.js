@@ -26,7 +26,7 @@ export default function Footer({ navigation }) {
       <View style={styles.linksContainer}>
         <TouchableOpacity
           onPress={() =>
-            Linking.openURL("https://www.gamesighter.com/privacyPolicy.html")
+            Linking.openURL("https://www.gamesighter.com/camPricerPrivacyPolicy.html")
           }
         >
           <Text style={styles.linkText}>Privacy Policy</Text>

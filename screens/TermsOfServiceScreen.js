@@ -27,7 +27,7 @@ const TermsOfServiceScreen = ({ navigation }) => {
       <View style={styles.content}>
         <Text style={styles.title}>Terms of Service</Text>
         <Text style={styles.effectiveDate}>
-          <Text style={styles.bold}>Effective Date:</Text> 7/17/24
+          <Text style={styles.bold}>Effective Date:</Text> January 1, 2025
         </Text>
 
         <Section title="Introduction">
@@ -92,11 +92,22 @@ const TermsOfServiceScreen = ({ navigation }) => {
           </Text>
           .
         </Section>
+
+        <Section title="Additional Information">
+          The most current version of these Terms of Service is also available online at{" "}
+          <Text
+            style={styles.link}
+            onPress={() => Linking.openURL("https://www.gamesighter.com/camPricerTermsOfService.html")}
+          >
+            www.gamesighter.com/camPricerTermsOfService.html
+          </Text>
+          .
+        </Section>
       </View>
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>CamPricer AI © 2022 – 2024</Text>
+        <Text style={styles.footerText}>CamPricer AI © 2022 – 2025</Text>
         <View style={styles.footerLinks}>
           <TouchableOpacity>
             <Text style={styles.footerLink}>Design Rationale</Text>
