@@ -179,104 +179,6 @@ export default function ImageUploader() {
     }
   };
 
-
-  // Update `allGames` state with new games and update the total used value
-  // function renderGameTitlesAndSetValueTotals(newGames, imageUriForUI) {
-  //   if (!newGames || newGames.length === 0) {
-  //     console.log("No games available");
-  //     return;
-  //   }
-  //   console.log("📌 newGames received:", JSON.stringify(newGames, null, 2));
-
-  //   const newGameObjects = newGames.map((game, index) => {
-  //     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); // Haptic feedback
-  //     console.log(
-  //       `🔍 Processing game ${index}:`,
-  //       JSON.stringify(game, null, 2)
-  //     );
-
-  //     const pricingData =
-  //       game[0]?.rows?.[0] || // Standard format
-  //       game[0]?.item || // Alternative format
-  //       {}; // Default to empty object if neither exist
-
-  //     return {
-  //       title: game[1] || "Unknown Title",
-  //       system: game[2] || "Unknown System",
-  //       loosePrice: pricingData.loose_price || "Not available",
-  //       cibPrice: pricingData.cib_price || "Not available",
-  //       newPrice: pricingData.new_price || "Not available",
-  //     };
-  //   });
-
-  //   // Add image and its games together
-  //   setUploads((prev) => [
-  //     { imageKey: imageUriForUI, games: newGameObjects },
-  //     ...prev,
-  //   ]);
-
-  //   // Update totals
-  //   updateTotals(newGameObjects);
-
-  //   // updateTotals(newGameObjects);
-
-  //   // Append raw game data
-  //   setAllGames((prevGames) => [...prevGames, ...newGameObjects]);
-
-  //   //thses are the old functions that added the total value of the games
-  //   // setTotalUsedValue(
-  //   //   (prevValue) =>
-  //   //     prevValue +
-  //   //     newGameObjects.reduce((total, game) => {
-  //   //       const loosePrice = parseFloat(game.loosePrice);
-  //   //       return total + (isNaN(loosePrice) ? 0 : loosePrice);
-  //   //     }, 0)
-  //   // );
-  //   // setTotalNewValue(
-  //   //   (prevValue) =>
-  //   //     prevValue +
-  //   //     newGameObjects.reduce((total, game) => {
-  //   //       const newPrice = parseFloat(game.newPrice);
-  //   //       return total + (isNaN(newPrice) ? 0 : newPrice);
-  //   //     }, 0)
-  //   // );
-  //   // setTotalCIBValue(
-  //   //   (prevValue) =>
-  //   //     prevValue +
-  //   //     newGameObjects.reduce((total, game) => {
-  //   //       const cibPrice = parseFloat(game.cibPrice);
-  //   //       return total + (isNaN(cibPrice) ? 0 : cibPrice);
-  //   //     }, 0)
-  //   // );
-  // }
-
-  // function updateTotals(games) {
-  //   setTotalUsedValue(
-  //     (prev) =>
-  //       prev +
-  //       games.reduce(
-  //         (total, game) => total + (parseFloat(game.loosePrice) || 0),
-  //         0
-  //       )
-  //   );
-  //   setTotalNewValue(
-  //     (prev) =>
-  //       prev +
-  //       games.reduce(
-  //         (total, game) => total + (parseFloat(game.newPrice) || 0),
-  //         0
-  //       )
-  //   );
-  //   setTotalCIBValue(
-  //     (prev) =>
-  //       prev +
-  //       games.reduce(
-  //         (total, game) => total + (parseFloat(game.cibPrice) || 0),
-  //         0
-  //       )
-  //   );
-  // }
-
   function removeUploadGame(
     uploadIndex,
     gameIndex,
@@ -370,10 +272,12 @@ export default function ImageUploader() {
                   <Text style={styles.label}>Amazon:</Text> {game.cibPrice}
                 </Text>
                 <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>Facebook Marketplace:</Text> {game.newPrice}
+                  <Text style={styles.label}>Facebook Marketplace:</Text>{" "}
+                  {game.newPrice}
                 </Text>
                 <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>Information:</Text> {game.information}
+                  <Text style={styles.label}>Information:</Text>{" "}
+                  {game.information}
                 </Text>
                 <TouchableOpacity
                   onPress={() =>
@@ -683,45 +587,56 @@ function processCameraData(cameraData, imageUriForUI, setUploads) {
     console.log("⚠️ No camera data available");
     return;
   }
-  
+
   console.log("📌 Camera data received:", JSON.stringify(cameraData, null, 2));
-  
+
   // Extract and parse the JSON from the result field
   let actualCameraData;
   try {
     // The result field contains markdown-wrapped JSON
     const resultString = cameraData.result || "";
     console.log("🔍 Raw result string:", resultString);
-    
+
     // Remove markdown code blocks
-    const jsonString = resultString.replace(/```json\n?/g, '').replace(/\n?```/g, '');
+    const jsonString = resultString
+      .replace(/```json\n?/g, "")
+      .replace(/\n?```/g, "");
     console.log("🔍 Cleaned JSON string:", jsonString);
-    
+
     // Parse the JSON
     actualCameraData = JSON.parse(jsonString);
-    console.log("🔍 Parsed actual camera data:", JSON.stringify(actualCameraData, null, 2));
+    console.log(
+      "🔍 Parsed actual camera data:",
+      JSON.stringify(actualCameraData, null, 2)
+    );
   } catch (error) {
     console.error("❌ Failed to parse camera data:", error);
     actualCameraData = {}; // Fallback to empty object
   }
-  
+
   const cameraObject = {
     title: actualCameraData.camera || "Unknown Camera",
     system: "Camera Information", // Static label for the information section
     loosePrice: actualCameraData.estimated_resale_value?.eBay || "N/A",
-    cibPrice: actualCameraData.estimated_resale_value?.Amazon || "N/A", 
-    newPrice: actualCameraData.estimated_resale_value?.Facebook_Marketplace || "N/A",
-    information: actualCameraData.camera_information?.information || "No information available"
+    cibPrice: actualCameraData.estimated_resale_value?.Amazon || "N/A",
+    newPrice:
+      actualCameraData.estimated_resale_value?.Facebook_Marketplace || "N/A",
+    information:
+      actualCameraData.camera_information?.information ||
+      "No information available",
   };
-  
-  console.log("🔍 Processed camera object:", JSON.stringify(cameraObject, null, 2));
-  
+
+  console.log(
+    "🔍 Processed camera object:",
+    JSON.stringify(cameraObject, null, 2)
+  );
+
   // Add to uploads state for UI rendering
   setUploads((prev) => [
     { imageKey: imageUriForUI, games: [cameraObject] }, // Using 'games' to work with existing UI
     ...prev,
   ]);
-  
+
   console.log("✅ Camera data added to uploads");
 }
 
@@ -918,10 +833,10 @@ async function uploadMultipleImages(
 
       const json = await response.json();
       console.log("📄 Parsed JSON:", json);
-      
+
       // Process the camera data directly (no more json.result)
       console.log("🎯 Camera data:", json);
-      
+
       processCameraData(json, image.uri, setUploads);
     }
   } catch (error) {
