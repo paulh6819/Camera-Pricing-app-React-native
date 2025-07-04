@@ -2,12 +2,12 @@
   "expo": {
     "name": "CamPricer",
     "slug": "campricer",
-    "icon": "./assets/icons/SIGHTER-ICON-PNG.png",
+    "icon": "./assets/icons/cameraIcon.png",
     "version": "1.1.2",
     "orientation": "portrait",
     "platforms": ["ios", "android"],
     "ios": {
-      "bundleIdentifier": "com.paulhenderson.camscout",
+      "bundleIdentifier": "com.paulhenderson.campricer",
       "infoPlist": {
         "NSCameraUsageDescription": "CamPricer requires access to your camera to take photos and evaluate camera equipment for pricing.",
         "NSPhotoLibraryUsageDescription": "CamPricer requires access to your photo library to upload images for camera equipment valuation.",
@@ -15,7 +15,7 @@
       }
     },
     "android": {
-      "package": "com.paulhenderson.camscout",
+      "package": "com.paulhenderson.campricer",
       "permissions": [
         "CAMERA",
         "WRITE_EXTERNAL_STORAGE",
