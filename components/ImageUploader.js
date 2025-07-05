@@ -133,12 +133,6 @@ export default function ImageUploader() {
             return;
           }
 
-          // ✅ Don't launch image picker immediately — let user tap again
-          Alert.alert(
-            "Photo Access Granted",
-            "Tap the button again to pick your game photos. Now that you granted permission you'll only have to press the button once. Enjoy!"
-          );
-          return;
         }
         result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -807,11 +801,11 @@ async function uploadMultipleImages(
       }
 
       //comment this bewlow in when i am testing serverside logic
-      if (Platform.OS === "android") {
-        gameRecognitionURL = "http://10.0.2.2:4200";
-      } else {
-        gameRecognitionURL = "http://localhost:4200";
-      }
+      // if (Platform.OS === "android") {
+      //   gameRecognitionURL = "http://10.0.2.2:4200";
+      // } else {
+      //   gameRecognitionURL = "http://localhost:4200";
+      // }
 
       //
       const response = await fetch(`${gameRecognitionURL}/identifyCamera`, {
