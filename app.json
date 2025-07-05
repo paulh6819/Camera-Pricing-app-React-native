@@ -5,7 +5,10 @@
     "icon": "./assets/icons/cameraIcon.png",
     "version": "1.1.2",
     "orientation": "portrait",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "ios": {
       "bundleIdentifier": "com.paulhenderson.campricer",
       "infoPlist": {
@@ -31,25 +34,26 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/Minecraft.ttf"]
+          "fonts": [
+            "./assets/fonts/Minecraft.ttf"
+          ]
         }
       ]
     ],
-    "assetBundlePatterns": ["**/*"],
-    "extra": {
-      "eas": {
-        "projectId": "REPLACE_WITH_YOUR_EAS_PROJECT_ID"
-      }
-    },
-    "owner": "REPLACE_WITH_YOUR_EXPO_USERNAME",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "owner": "paulh6819",
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/REPLACE_WITH_YOUR_EAS_PROJECT_ID",
-      "enabled": true,
-      "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0
+      "enabled": false
+    },
+    "extra": {
+      "eas": {
+        "projectId": "11db3343-3f4b-44fc-b0b2-19a68ff735a0"
+      }
     }
   }
 }
