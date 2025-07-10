@@ -19,12 +19,14 @@ import {
   UIManager,
   Alert,
   RefreshControl,
+  Switch,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
 import * as Haptics from "expo-haptics";
 import { LoadingSymbol } from "./loadingSymbol";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import CameraModeHelpModal from "./CameraModeHelpModal";
 export default function ImageUploader() {
   const [imageUri, setImageUri] = useState([]);
 
@@ -36,6 +38,11 @@ export default function ImageUploader() {
   const [useCamera, setUseCamera] = useState(false);
   const [uploads, setUploads] = useState([]);
   const [pullCount, setPullcount] = useState(0);
+  const [singleCameraMode, setSingleCameraMode] = useState(false);
+  const [
+    showInformationModelForSingleModeSwitch,
+    setShowInformationModelForSingleModeSwitch,
+  ] = useState(false);
 
   let gameRecognitionURL = "https://www.gamesighter.com";
 
@@ -132,7 +139,6 @@ export default function ImageUploader() {
             Alert.alert("We need photo access to upload your games.");
             return;
           }
-
         }
         result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -157,12 +163,22 @@ export default function ImageUploader() {
 
       console.log("made it past setImageUri");
 
-      await uploadMultipleImages(
-        result.assets,
-        setLoading,
-        setUploads,
-        gameRecognitionURL
-      );
+      // Use different upload function based on toggle state
+      if (singleCameraMode) {
+        await uploadAllPhotosAtOnce(
+          result.assets,
+          setLoading,
+          setUploads,
+          gameRecognitionURL
+        );
+      } else {
+        await uploadMultipleImages(
+          result.assets,
+          setLoading,
+          setUploads,
+          gameRecognitionURL
+        );
+      }
       setPullcount((prev) => prev + 1);
       console.log("this is the pullcount", pullCount);
       if (pullCount === 2) {
@@ -211,6 +227,27 @@ export default function ImageUploader() {
           source={require("../assets/icons/cameraIcon.png")}
         />
       </TouchableOpacity>
+
+      <View style={styles.toggleContainer}>
+        <Text style={styles.toggleLabel}>
+          {singleCameraMode ? "Single Camera Mode" : "Multiple Camera Mode"}
+        </Text>
+        <View style={styles.toggleControlsContainer}>
+          <Switch
+            value={singleCameraMode}
+            onValueChange={setSingleCameraMode}
+            trackColor={{ false: "#767577", true: "#009688" }}
+            thumbColor={singleCameraMode ? "#7FFBD2" : "#f4f3f4"}
+          />
+          <TouchableOpacity
+            style={styles.helpButton}
+            onPress={() => setShowInformationModelForSingleModeSwitch(true)}
+          >
+            <Text style={styles.helpButtonText}>?</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <TouchableOpacity onPress={handlePickImage} style={styles.uploadButton}>
         <View style={styles.textContainer}>
           <Text style={styles.uploadText}>
@@ -328,6 +365,11 @@ export default function ImageUploader() {
           </Text>
         </View>
       )} */}
+
+      <CameraModeHelpModal
+        visible={showInformationModelForSingleModeSwitch}
+        onClose={() => setShowInformationModelForSingleModeSwitch(false)}
+      />
     </View>
   );
 }
@@ -541,7 +583,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 16,
     elevation: 12,
-    marginTop: 96,
+    marginTop: 20,
     transform: [{ scale: 1 }],
   },
   textContainer: {
@@ -564,6 +606,43 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1, // Allow the content to grow dynamically
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginVertical: 5,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+    width: "90%",
+  },
+  toggleControlsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  toggleLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    flex: 1,
+  },
+  helpButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#009688",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 10,
+  },
+  helpButtonText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
   },
 });
 
@@ -705,6 +784,106 @@ function alertToUsecCameraOrPickFromAGallery(setUseCamera) {
   );
 }
 
+//This function uploads all photos at once for single camera mode
+async function uploadAllPhotosAtOnce(
+  imagesArray,
+  setLoading,
+  setUploads,
+  gameRecognitionURL
+) {
+  const ENABLE_WEBP = false;
+
+  setLoading(true);
+  const startTime = Date.now();
+  console.log(
+    `📦 Batch upload started at ${new Date(startTime).toLocaleTimeString()}`
+  );
+
+  try {
+    const allPhotosData = [];
+
+    // Prepare all photos for batch upload
+    for (let index = 0; index < imagesArray.length; index++) {
+      const image = imagesArray[index];
+      const platformSource = Platform.OS === "ios" ? "iOS" : "Android";
+
+      // Convert to WebP for faster upload if enabled
+      const originalUri = image.uri;
+      let finalUri = originalUri;
+      let finalType = image.type || "image/jpeg";
+
+      if (ENABLE_WEBP) {
+        const webp = await ImageManipulator.manipulateAsync(image.uri, [], {
+          compress: 0.8,
+          format: ImageManipulator.SaveFormat.WEBP,
+        });
+        finalUri = webp.uri;
+        finalType = "image/webp";
+      }
+
+      const fileInfo = await FileSystem.getInfoAsync(finalUri);
+      const base64Image = await FileSystem.readAsStringAsync(finalUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      if (!fileInfo.exists) {
+        throw new Error(`File does not exist at URI: ${image.uri}`);
+      }
+
+      if (fileInfo.size === 0) {
+        throw new Error(`File is empty at URI: ${image.uri}`);
+      }
+
+      // Add each photo to the batch
+      allPhotosData.push({
+        image: base64Image,
+        type: finalType,
+        name: image.fileName || `uploaded_image_${index}.jpg`,
+        uri: image.uri, // Keep original URI for UI display
+      });
+    }
+
+    // Send all photos in one request
+    const payload = {
+      images: allPhotosData,
+      source: Platform.OS === "ios" ? "iOS" : "Android",
+      batchMode: true,
+    };
+
+    const response = await fetch(`${gameRecognitionURL}/identifyCamera`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log("📡 Batch response:", response);
+    console.log("📊 Response status:", response.status);
+
+    if (!response.ok) {
+      throw new Error(`Failed to upload batch. Status: ${response.status}`);
+    }
+
+    const json = await response.json();
+    console.log("📄 Batch parsed JSON:", json);
+
+    // Process the camera data from batch response
+    processCameraData(json, allPhotosData[0].uri, setUploads);
+  } catch (error) {
+    console.error("Error uploading batch images:", error.message);
+    console.error("Full error object:", error);
+  } finally {
+    setLoading(false);
+    const endTime = Date.now();
+    const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
+    console.log(
+      `✅ Batch upload finished at ${new Date(endTime).toLocaleTimeString()}`
+    );
+    console.log(`⏱️ Total time: ${durationSeconds} seconds`);
+  }
+}
+
 //This is the main logic of the app
 async function uploadMultipleImages(
   imagesArray,
@@ -801,11 +980,11 @@ async function uploadMultipleImages(
       }
 
       //comment this bewlow in when i am testing serverside logic
-      // if (Platform.OS === "android") {
-      //   gameRecognitionURL = "http://10.0.2.2:4200";
-      // } else {
-      //   gameRecognitionURL = "http://localhost:4200";
-      // }
+      if (Platform.OS === "android") {
+        gameRecognitionURL = "http://10.0.2.2:4200";
+      } else {
+        gameRecognitionURL = "http://localhost:4200";
+      }
 
       //
       const response = await fetch(`${gameRecognitionURL}/identifyCamera`, {
