@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import ImageUploader from "../components/ImageUploader";
 import Footer from "../components/Footer";
+import HamburgerMenu from "../components/HamburgerMenu";
 import { ScrollView } from "react-native-gesture-handler";
 import * as Updates from "expo-updates";
 import * as Haptics from "expo-haptics";
@@ -50,6 +51,7 @@ const HomeScreen = ({ navigation }) => {
             >
               <Text style={styles.buttonText1}>About</Text>
             </TouchableOpacity>
+            <HamburgerMenu />
             {/* {Platform.OS === "android" && (
               <TouchableOpacity onPress={onRefresh}>
                 <Text>Force Refresh for inner component</Text>

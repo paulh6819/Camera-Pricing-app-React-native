@@ -47,7 +47,6 @@ export default function ImageUploader() {
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [exchangeRates, setExchangeRates] = useState({});
   const [ratesLoading, setRatesLoading] = useState(false);
-  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
 
   const currencies = [
     { code: "USD", symbol: "$", name: "US Dollar", region: "United States" },
