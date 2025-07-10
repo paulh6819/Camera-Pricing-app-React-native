@@ -38,13 +38,20 @@ export default function ImageUploader() {
   const [useCamera, setUseCamera] = useState(false);
   const [uploads, setUploads] = useState([]);
   const [pullCount, setPullcount] = useState(0);
-  const [singleCameraMode, setSingleCameraMode] = useState(false);
+  const [singleCameraMode, setSingleCameraMode] = useState(true);
   const [
     showInformationModelForSingleModeSwitch,
     setShowInformationModelForSingleModeSwitch,
   ] = useState(false);
 
   let gameRecognitionURL = "https://www.gamesighter.com";
+  
+  //comment this below in when i am testing serverside logic
+  if (Platform.OS === "android") {
+    gameRecognitionURL = "http://10.0.2.2:4200";
+  } else {
+    gameRecognitionURL = "http://localhost:4200";
+  }
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -230,7 +237,7 @@ export default function ImageUploader() {
 
       <View style={styles.toggleContainer}>
         <Text style={styles.toggleLabel}>
-          {singleCameraMode ? "Single Camera Mode" : "Multiple Camera Mode"}
+          {singleCameraMode ? "Price Single Camera" : "Price Multiple Cameras"}
         </Text>
         <View style={styles.toggleControlsContainer}>
           <Switch
@@ -251,7 +258,7 @@ export default function ImageUploader() {
       <TouchableOpacity onPress={handlePickImage} style={styles.uploadButton}>
         <View style={styles.textContainer}>
           <Text style={styles.uploadText}>
-            Upload or Take a Photo of Cameras
+            {singleCameraMode ? "Upload Photos of Single Camera" : "Upload Multiple Cameras"}
           </Text>
         </View>
       </TouchableOpacity>
@@ -845,7 +852,7 @@ async function uploadAllPhotosAtOnce(
 
     // Send all photos in one request
     const payload = {
-      images: allPhotosData,
+      images: allPhotosData.map(photo => photo.image), // Extract just the base64 strings
       source: Platform.OS === "ios" ? "iOS" : "Android",
       batchMode: true,
     };
@@ -977,13 +984,6 @@ async function uploadMultipleImages(
 
       for (let pair of formData.entries()) {
         console.log("🧾 FormData entry:", pair[0], pair[1]);
-      }
-
-      //comment this bewlow in when i am testing serverside logic
-      if (Platform.OS === "android") {
-        gameRecognitionURL = "http://10.0.2.2:4200";
-      } else {
-        gameRecognitionURL = "http://localhost:4200";
       }
 
       //
