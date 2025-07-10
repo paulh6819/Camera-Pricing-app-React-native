@@ -170,8 +170,17 @@ export default function ImageUploader() {
 
       console.log("made it past setImageUri");
 
-      // Use different upload function based on toggle state
-      if (singleCameraMode) {
+      // Route upload based on number of photos and toggle state
+      // If only one photo, always use multiple camera endpoint (backend works better with single photos)
+      if (result.assets.length === 1) {
+        await uploadMultipleImages(
+          result.assets,
+          setLoading,
+          setUploads,
+          gameRecognitionURL
+        );
+      } else if (singleCameraMode) {
+        // Multiple photos in single camera mode - use batch endpoint
         await uploadAllPhotosAtOnce(
           result.assets,
           setLoading,
@@ -179,6 +188,7 @@ export default function ImageUploader() {
           gameRecognitionURL
         );
       } else {
+        // Multiple photos in multiple camera mode - use individual endpoint
         await uploadMultipleImages(
           result.assets,
           setLoading,
