@@ -43,9 +43,107 @@ export default function ImageUploader() {
     showInformationModelForSingleModeSwitch,
     setShowInformationModelForSingleModeSwitch,
   ] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [exchangeRates, setExchangeRates] = useState({});
+  const [ratesLoading, setRatesLoading] = useState(false);
+  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
+
+  const currencies = [
+    { code: "USD", symbol: "$", name: "US Dollar", region: "United States" },
+    { code: "EUR", symbol: "€", name: "Euro", region: "Europe" },
+    {
+      code: "GBP",
+      symbol: "£",
+      name: "British Pound",
+      region: "United Kingdom",
+    },
+    { code: "JPY", symbol: "¥", name: "Japanese Yen", region: "Japan" },
+    { code: "CAD", symbol: "C$", name: "Canadian Dollar", region: "Canada" },
+    {
+      code: "AUD",
+      symbol: "A$",
+      name: "Australian Dollar",
+      region: "Australia",
+    },
+    { code: "MXN", symbol: "$", name: "Mexican Peso", region: "Mexico" },
+    { code: "BRL", symbol: "R$", name: "Brazilian Real", region: "Brazil" },
+  ];
+
+  // Get current region based on selected currency
+  const getCurrentRegion = () => {
+    const currency = currencies.find((c) => c.code === selectedCurrency);
+    return currency ? currency.region : "United States";
+  };
+
+  // Fetch exchange rates from external API
+  const fetchExchangeRates = async () => {
+    try {
+      setRatesLoading(true);
+      console.log("💱 Fetching exchange rates...");
+
+      // Using exchangerate-api.com (free tier)
+      const response = await fetch(
+        "https://api.exchangerate-api.com/v4/latest/USD"
+      );
+      const data = await response.json();
+
+      console.log("💱 Exchange rates fetched:", data.rates);
+      setExchangeRates(data.rates);
+    } catch (error) {
+      console.error("❌ Error fetching exchange rates:", error);
+      // Fallback to approximate rates if API fails
+      setExchangeRates({
+        USD: 1.0,
+        EUR: 0.85,
+        GBP: 0.75,
+        JPY: 150.0,
+        CAD: 1.35,
+        AUD: 1.5,
+        MXN: 18.0,
+        BRL: 5.0,
+      });
+    } finally {
+      setRatesLoading(false);
+    }
+  };
+
+  // Convert USD price to selected currency
+  const convertPrice = (usdPrice, targetCurrency) => {
+    if (!usdPrice || usdPrice === "N/A" || !exchangeRates[targetCurrency])
+      return "N/A";
+
+    // Extract numeric value from price string (remove $ and handle ranges)
+    const priceStr = usdPrice.toString().replace(/[$,]/g, "");
+    const currency = currencies.find((c) => c.code === targetCurrency);
+    const rate = exchangeRates[targetCurrency];
+
+    if (!currency || !rate) return usdPrice;
+
+    // Handle price ranges like "$50 - $100"
+    if (priceStr.includes(" - ")) {
+      const [min, max] = priceStr.split(" - ");
+      const convertedMin = (parseFloat(min) * rate).toFixed(
+        targetCurrency === "JPY" ? 0 : 2
+      );
+      const convertedMax = (parseFloat(max) * rate).toFixed(
+        targetCurrency === "JPY" ? 0 : 2
+      );
+      return `${currency.symbol}${convertedMin} - ${currency.symbol}${convertedMax}`;
+    }
+
+    // Handle single price
+    const numericPrice = parseFloat(priceStr);
+    if (isNaN(numericPrice)) return usdPrice;
+
+    const convertedPrice = (numericPrice * rate).toFixed(
+      targetCurrency === "JPY" ? 0 : 2
+    );
+    return `${currency.symbol}${convertedPrice}`;
+  };
 
   let gameRecognitionURL = "https://www.gamesighter.com";
-  
+
   //comment this below in when i am testing serverside logic
   if (Platform.OS === "android") {
     gameRecognitionURL = "http://10.0.2.2:4200";
@@ -54,6 +152,11 @@ export default function ImageUploader() {
   }
 
   const [refreshing, setRefreshing] = useState(false);
+
+  // Fetch exchange rates on component mount
+  React.useEffect(() => {
+    fetchExchangeRates();
+  }, []);
 
   const onRefresh = useCallback(async () => {
     console.log("youre press the refreash buttoni");
@@ -177,7 +280,8 @@ export default function ImageUploader() {
           result.assets,
           setLoading,
           setUploads,
-          gameRecognitionURL
+          gameRecognitionURL,
+          getCurrentRegion()
         );
       } else if (singleCameraMode) {
         // Multiple photos in single camera mode - use batch endpoint
@@ -185,7 +289,8 @@ export default function ImageUploader() {
           result.assets,
           setLoading,
           setUploads,
-          gameRecognitionURL
+          gameRecognitionURL,
+          getCurrentRegion()
         );
       } else {
         // Multiple photos in multiple camera mode - use individual endpoint
@@ -193,7 +298,8 @@ export default function ImageUploader() {
           result.assets,
           setLoading,
           setUploads,
-          gameRecognitionURL
+          gameRecognitionURL,
+          getCurrentRegion()
         );
       }
       setPullcount((prev) => prev + 1);
@@ -268,7 +374,9 @@ export default function ImageUploader() {
       <TouchableOpacity onPress={handlePickImage} style={styles.uploadButton}>
         <View style={styles.textContainer}>
           <Text style={styles.uploadText}>
-            {singleCameraMode ? "Upload Photos of Single Camera" : "Upload Multiple Cameras"}
+            {singleCameraMode
+              ? "Upload Photos of Single Camera"
+              : "Upload Multiple Cameras"}
           </Text>
         </View>
       </TouchableOpacity>
@@ -314,14 +422,16 @@ export default function ImageUploader() {
               >
                 <Text style={styles.videoGameTitle}>{game.title}</Text>
                 <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>eBay:</Text> {game.loosePrice}
+                  <Text style={styles.label}>eBay:</Text>{" "}
+                  {convertPrice(game.loosePrice, selectedCurrency)}
                 </Text>
                 <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>Amazon:</Text> {game.cibPrice}
+                  <Text style={styles.label}>Amazon:</Text>{" "}
+                  {convertPrice(game.cibPrice, selectedCurrency)}
                 </Text>
                 <Text style={styles.gameDetail}>
                   <Text style={styles.label}>Facebook Marketplace:</Text>{" "}
-                  {game.newPrice}
+                  {convertPrice(game.newPrice, selectedCurrency)}
                 </Text>
                 <Text style={styles.gameDetail}>
                   <Text style={styles.label}>Information:</Text>{" "}
@@ -382,6 +492,45 @@ export default function ImageUploader() {
           </Text>
         </View>
       )} */}
+
+      {/* Currency Exchange Footer */}
+      <View style={styles.footerContainer}>
+        <TouchableOpacity
+          style={styles.currencyButton}
+          onPress={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+          onLongPress={() => fetchExchangeRates()}
+        >
+          <Text style={styles.currencyButtonText}>
+            {ratesLoading
+              ? "Loading..."
+              : `${
+                  currencies.find((c) => c.code === selectedCurrency)?.symbol
+                } ${selectedCurrency}`}
+          </Text>
+          <Text style={styles.dropdownArrow}>
+            {showCurrencyDropdown ? "▲" : "▼"}
+          </Text>
+        </TouchableOpacity>
+
+        {showCurrencyDropdown && (
+          <View style={styles.currencyDropdown}>
+            {currencies.map((currency) => (
+              <TouchableOpacity
+                key={currency.code}
+                style={styles.currencyOption}
+                onPress={() => {
+                  setSelectedCurrency(currency.code);
+                  setShowCurrencyDropdown(false);
+                }}
+              >
+                <Text style={styles.currencyOptionText}>
+                  {currency.symbol} {currency.code} - {currency.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
 
       <CameraModeHelpModal
         visible={showInformationModelForSingleModeSwitch}
@@ -661,6 +810,58 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
+  footerContainer: {
+    position: "absolute",
+    bottom: -165,
+    left: 5,
+    zIndex: 1000,
+  },
+  currencyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#009688",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  currencyButtonText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "600",
+    marginRight: 4,
+  },
+  dropdownArrow: {
+    color: "white",
+    fontSize: 10,
+  },
+  currencyDropdown: {
+    position: "absolute",
+    bottom: 45,
+    left: 0,
+    backgroundColor: "white",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 6,
+    minWidth: 200,
+  },
+  currencyOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  currencyOptionText: {
+    fontSize: 14,
+    color: "#333",
+  },
 });
 
 // Enable LayoutAnimation for Android
@@ -806,7 +1007,8 @@ async function uploadAllPhotosAtOnce(
   imagesArray,
   setLoading,
   setUploads,
-  gameRecognitionURL
+  gameRecognitionURL,
+  region
 ) {
   const ENABLE_WEBP = false;
 
@@ -862,9 +1064,10 @@ async function uploadAllPhotosAtOnce(
 
     // Send all photos in one request
     const payload = {
-      images: allPhotosData.map(photo => photo.image), // Extract just the base64 strings
+      images: allPhotosData.map((photo) => photo.image), // Extract just the base64 strings
       source: Platform.OS === "ios" ? "iOS" : "Android",
       batchMode: true,
+      region: region,
     };
 
     const response = await fetch(`${gameRecognitionURL}/identifyCamera`, {
@@ -906,7 +1109,8 @@ async function uploadMultipleImages(
   imagesArray,
   setLoading,
   setUploads,
-  gameRecognitionURL
+  gameRecognitionURL,
+  region
 ) {
   const ENABLE_WEBP = false;
 
@@ -975,6 +1179,7 @@ async function uploadMultipleImages(
         type: image.type || "image/jpeg",
         name: image.fileName || "uploaded_image.jpg",
         source: platformSource,
+        region: region,
       };
 
       if (!fileInfo.exists) {
