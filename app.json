@@ -29,6 +29,14 @@
         "CAMERA",
         "WRITE_EXTERNAL_STORAGE",
         "READ_EXTERNAL_STORAGE",
+        "INTERNET",
+        "CAMERA",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "INTERNET",
+        "CAMERA",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
         "INTERNET"
       ]
     },
@@ -50,7 +58,8 @@
       "policy": "appVersion"
     },
     "updates": {
-      "enabled": true
+      "enabled": true,
+      "url": "https://u.expo.dev/11db3343-3f4b-44fc-b0b2-19a68ff735a0"
     },
     "extra": {
       "eas": {
