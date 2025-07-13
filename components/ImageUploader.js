@@ -26,7 +26,7 @@ import * as ImagePicker from "expo-image-picker";
 
 import * as Haptics from "expo-haptics";
 import { LoadingSymbol } from "./loadingSymbol";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, { FadeIn, FadeOut, useSharedValue, withTiming, useAnimatedStyle } from "react-native-reanimated";
 import CameraModeHelpModal from "./CameraModeHelpModal";
 import RecentResults from "./RecentResults";
 export default function ImageUploader() {
@@ -50,6 +50,14 @@ export default function ImageUploader() {
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [exchangeRates, setExchangeRates] = useState({});
   const [ratesLoading, setRatesLoading] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+  const opacity = useSharedValue(1);
+  
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+    };
+  });
 
   const currencies = [
     { code: "USD", symbol: "$", name: "US Dollar", region: "United States" },
@@ -201,17 +209,10 @@ export default function ImageUploader() {
       information: cameraResult.information,
       imageUri: cameraResult.imageUri || null
     };
-
-    console.log('🔍 New recent item:', newRecent);
     
     // Use functional update to avoid stale closure
     setRecents(prevRecents => {
-      console.log('🔍 Previous recents length:', prevRecents.length);
-      console.log('🔍 Previous recents:', prevRecents);
-      
       const updatedRecents = [newRecent, ...prevRecents].slice(0, 10); // Keep only last 10
-      console.log('🔍 Updated recents length:', updatedRecents.length);
-      console.log('🔍 Updated recents:', updatedRecents);
       
       // Save to AsyncStorage
       saveRecentResults(updatedRecents);
@@ -453,12 +454,6 @@ export default function ImageUploader() {
         </View>
       </View>
 
-      <RecentResults 
-        recents={recents}
-        convertPrice={convertPrice}
-        selectedCurrency={selectedCurrency}
-        clearRecentResults={clearRecentResults}
-      />
 
       <TouchableOpacity onPress={handlePickImage} style={styles.uploadButton}>
         <View style={styles.textContainer}>
@@ -496,76 +491,97 @@ export default function ImageUploader() {
           />
         }
       >
-        {uploads.map((item, index) => (
-          <View key={item.imageKey + index}>
-            <Image
-              source={{ uri: item.imageKey }}
-              style={styles.uploadImageMappedToResults}
-            />
-            {item.games.map((game, gameIndex) => (
-              <Animated.View
-                key={`${game.title}-${gameIndex}`}
-                style={styles.gameContainer}
-                // entering={FadeIn.duration(500)}
-                exiting={FadeOut.duration(500)}
-              >
-                <Text style={styles.videoGameTitle}>{game.title}</Text>
-                <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>eBay:</Text>{" "}
-                  {convertPrice(game.loosePrice, selectedCurrency)}
-                </Text>
-                <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>Amazon:</Text>{" "}
-                  {convertPrice(game.cibPrice, selectedCurrency)}
-                </Text>
-                <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>Facebook Marketplace:</Text>{" "}
-                  {convertPrice(game.newPrice, selectedCurrency)}
-                </Text>
-                <Text style={styles.gameDetail}>
-                  <Text style={styles.label}>Information:</Text>{" "}
-                  {game.information}
-                </Text>
-                <TouchableOpacity
-                  onPress={() =>
-                    removeUploadGame(
-                      index,
-                      gameIndex,
-                      game.loosePrice,
-                      game.cibPrice,
-                      game.newPrice
-                    )
-                  }
-                  style={styles.TouchableOpacityXButton}
+        <Animated.View style={animatedStyle}>
+          {uploads.map((item, index) => (
+            <View key={item.imageKey + index}>
+              <Image
+                source={{ uri: item.imageKey }}
+                style={styles.uploadImageMappedToResults}
+              />
+              {item.games.map((game, gameIndex) => (
+                <Animated.View
+                  key={`${game.title}-${gameIndex}`}
+                  style={styles.gameContainer}
+                  // entering={FadeIn.duration(500)}
+                  exiting={FadeOut.duration(500)}
                 >
-                  <Image
-                    source={require("../assets/images/xButton.jpeg")}
-                    style={styles.xButton}
-                  />
-                </TouchableOpacity>
-              </Animated.View>
-            ))}
-          </View>
-        ))}
+                  <Text style={styles.videoGameTitle}>{game.title}</Text>
+                  <Text style={styles.gameDetail}>
+                    <Text style={styles.label}>eBay:</Text>{" "}
+                    {convertPrice(game.loosePrice, selectedCurrency)}
+                  </Text>
+                  <Text style={styles.gameDetail}>
+                    <Text style={styles.label}>Amazon:</Text>{" "}
+                    {convertPrice(game.cibPrice, selectedCurrency)}
+                  </Text>
+                  <Text style={styles.gameDetail}>
+                    <Text style={styles.label}>Facebook Marketplace:</Text>{" "}
+                    {convertPrice(game.newPrice, selectedCurrency)}
+                  </Text>
+                  <Text style={styles.gameDetail}>
+                    <Text style={styles.label}>Information:</Text>{" "}
+                    {game.information}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      removeUploadGame(
+                        index,
+                        gameIndex,
+                        game.loosePrice,
+                        game.cibPrice,
+                        game.newPrice
+                      )
+                    }
+                    style={styles.TouchableOpacityXButton}
+                  >
+                    <Image
+                      source={require("../assets/images/xButton.jpeg")}
+                      style={styles.xButton}
+                    />
+                  </TouchableOpacity>
+                </Animated.View>
+              ))}
+            </View>
+          ))}
+        </Animated.View>
       </ScrollView>
 
-      {uploads.length > 0 && (
-        <TouchableOpacity
-          style={styles.clearButton}
-          onPress={async () => {
-            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      {(uploads.length > 0 || isClearing) && (
+        <Animated.View style={animatedStyle}>
+          <TouchableOpacity
+            style={styles.clearButton}
+            onPress={async () => {
+              await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-            // Fully reset ALL state
-            setAllGames([]);
-            setUploads([]);
-            setImageUri([]);
-            setTotalUsedValue(0);
-            setTotalNewValue(0);
-            setTotalCIBValue(0);
-          }}
-        >
-          <Text style={styles.clearButtonText}>Clear Results</Text>
-        </TouchableOpacity>
+              // Start clearing animation
+              setIsClearing(true);
+              opacity.value = withTiming(0, { duration: 800 });
+
+              // Wait for animation to complete before clearing state
+              setTimeout(() => {
+                // Fully reset ALL state
+                setAllGames([]);
+                setUploads([]);
+                setImageUri([]);
+                setTotalUsedValue(0);
+                setTotalNewValue(0);
+                setTotalCIBValue(0);
+                setIsClearing(false);
+                opacity.value = 1; // Reset opacity for next time
+              }, 800); // 800ms fade duration
+            }}
+          >
+            <Text style={styles.clearButtonText}>Clear Current Results</Text>
+          </TouchableOpacity>
+
+          {/* Recent Results - Show when there are current uploads/results on screen */}
+          <RecentResults 
+            recents={recents}
+            convertPrice={convertPrice}
+            selectedCurrency={selectedCurrency}
+            clearRecentResults={clearRecentResults}
+          />
+        </Animated.View>
       )}
 
       {/* {uploads.length > 0 && (

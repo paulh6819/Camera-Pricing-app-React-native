@@ -10,9 +10,6 @@ import {
 export default function RecentResults({ recents, convertPrice, selectedCurrency, clearRecentResults }) {
   const [showRecentResults, setShowRecentResults] = useState(true); // Default to showing results
 
-  console.log('📱 RecentResults component received recents:', recents);
-  console.log('📱 RecentResults recents length:', recents?.length);
-
   if (!recents || recents.length === 0) {
     return null; // Don't render anything if no recent results
   }
