@@ -5,6 +5,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as StoreReview from "expo-store-review";
 import { askForReview } from "../utils/askForReview";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
 import {
   View,
@@ -27,6 +28,7 @@ import * as Haptics from "expo-haptics";
 import { LoadingSymbol } from "./loadingSymbol";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import CameraModeHelpModal from "./CameraModeHelpModal";
+import RecentResults from "./RecentResults";
 export default function ImageUploader() {
   const [imageUri, setImageUri] = useState([]);
 
@@ -38,6 +40,7 @@ export default function ImageUploader() {
   const [useCamera, setUseCamera] = useState(false);
   const [uploads, setUploads] = useState([]);
   const [pullCount, setPullcount] = useState(0);
+  const [recents, setRecents] = useState([]);
   const [singleCameraMode, setSingleCameraMode] = useState(true);
   const [
     showInformationModelForSingleModeSwitch,
@@ -150,11 +153,88 @@ export default function ImageUploader() {
   //   gameRecognitionURL = "http://localhost:4200";
   // }
 
+  if (Constants.executionEnvironment !== "storeClient") {
+    console.log(
+      "this shuold only log in production",
+      Constants.executionEnvironment
+    );
+    gameRecognitionURL = "https://www.gamesighter.com";
+  }
+
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch exchange rates on component mount
+  // Load recent results from storage
+  const loadRecentResults = async () => {
+    try {
+      const storedRecents = await AsyncStorage.getItem('recentCameraResults');
+      if (storedRecents) {
+        const parsedRecents = JSON.parse(storedRecents);
+        setRecents(parsedRecents);
+        console.log('📱 Loaded recent results from storage:', parsedRecents.length);
+      }
+    } catch (error) {
+      console.error('❌ Error loading recent results:', error);
+    }
+  };
+
+  // Save recent results to storage
+  const saveRecentResults = async (newRecents) => {
+    try {
+      await AsyncStorage.setItem('recentCameraResults', JSON.stringify(newRecents));
+      console.log('💾 Saved recent results to storage:', newRecents.length);
+    } catch (error) {
+      console.error('❌ Error saving recent results:', error);
+    }
+  };
+
+  // Add new result to recents (keep last 10 results)
+  const addToRecents = async (cameraResult) => {
+    const newRecent = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      camera: cameraResult.title,
+      prices: {
+        eBay: cameraResult.loosePrice,
+        Amazon: cameraResult.cibPrice,
+        FacebookMarketplace: cameraResult.newPrice
+      },
+      information: cameraResult.information,
+      imageUri: cameraResult.imageUri || null
+    };
+
+    console.log('🔍 New recent item:', newRecent);
+    
+    // Use functional update to avoid stale closure
+    setRecents(prevRecents => {
+      console.log('🔍 Previous recents length:', prevRecents.length);
+      console.log('🔍 Previous recents:', prevRecents);
+      
+      const updatedRecents = [newRecent, ...prevRecents].slice(0, 10); // Keep only last 10
+      console.log('🔍 Updated recents length:', updatedRecents.length);
+      console.log('🔍 Updated recents:', updatedRecents);
+      
+      // Save to AsyncStorage
+      saveRecentResults(updatedRecents);
+      
+      return updatedRecents;
+    });
+  };
+
+  // Clear all recent results
+  const clearRecentResults = async () => {
+    try {
+      await AsyncStorage.removeItem('recentCameraResults');
+      setRecents([]);
+      console.log('🗑️ Cleared all recent results');
+    } catch (error) {
+      console.error('❌ Error clearing recent results:', error);
+    }
+  };
+
+  // Fetch exchange rates and load recent results on component mount
   React.useEffect(() => {
     fetchExchangeRates();
+    loadRecentResults();
   }, []);
 
   const onRefresh = useCallback(async () => {
@@ -280,7 +360,8 @@ export default function ImageUploader() {
           setLoading,
           setUploads,
           gameRecognitionURL,
-          getCurrentRegion()
+          getCurrentRegion(),
+          addToRecents
         );
       } else if (singleCameraMode) {
         // Multiple photos in single camera mode - use batch endpoint
@@ -289,7 +370,8 @@ export default function ImageUploader() {
           setLoading,
           setUploads,
           gameRecognitionURL,
-          getCurrentRegion()
+          getCurrentRegion(),
+          addToRecents
         );
       } else {
         // Multiple photos in multiple camera mode - use individual endpoint
@@ -298,7 +380,8 @@ export default function ImageUploader() {
           setLoading,
           setUploads,
           gameRecognitionURL,
-          getCurrentRegion()
+          getCurrentRegion(),
+          addToRecents
         );
       }
       setPullcount((prev) => prev + 1);
@@ -369,6 +452,13 @@ export default function ImageUploader() {
           </TouchableOpacity>
         </View>
       </View>
+
+      <RecentResults 
+        recents={recents}
+        convertPrice={convertPrice}
+        selectedCurrency={selectedCurrency}
+        clearRecentResults={clearRecentResults}
+      />
 
       <TouchableOpacity onPress={handlePickImage} style={styles.uploadButton}>
         <View style={styles.textContainer}>
@@ -872,7 +962,7 @@ if (
 }
 
 // Process camera data from LLM and add to UI
-function processCameraData(cameraData, imageUriForUI, setUploads) {
+function processCameraData(cameraData, imageUriForUI, setUploads, addToRecents = null) {
   if (!cameraData) {
     console.log("⚠️ No camera data available");
     return;
@@ -914,6 +1004,7 @@ function processCameraData(cameraData, imageUriForUI, setUploads) {
     information:
       actualCameraData.camera_information?.information ||
       "No information available",
+    imageUri: imageUriForUI, // Add image URI for recent results
   };
 
   console.log(
@@ -926,6 +1017,12 @@ function processCameraData(cameraData, imageUriForUI, setUploads) {
     { imageKey: imageUriForUI, games: [cameraObject] }, // Using 'games' to work with existing UI
     ...prev,
   ]);
+
+  // Add to recent results if function is provided
+  if (addToRecents) {
+    addToRecents(cameraObject);
+    console.log("✅ Camera data added to recent results");
+  }
 
   console.log("✅ Camera data added to uploads");
 }
@@ -1007,7 +1104,8 @@ async function uploadAllPhotosAtOnce(
   setLoading,
   setUploads,
   gameRecognitionURL,
-  region
+  region,
+  addToRecents
 ) {
   const ENABLE_WEBP = false;
 
@@ -1088,7 +1186,7 @@ async function uploadAllPhotosAtOnce(
     console.log("📄 Batch parsed JSON:", json);
 
     // Process the camera data from batch response
-    processCameraData(json, allPhotosData[0].uri, setUploads);
+    processCameraData(json, allPhotosData[0].uri, setUploads, addToRecents);
   } catch (error) {
     console.error("Error uploading batch images:", error.message);
     console.error("Full error object:", error);
@@ -1109,7 +1207,8 @@ async function uploadMultipleImages(
   setLoading,
   setUploads,
   gameRecognitionURL,
-  region
+  region,
+  addToRecents
 ) {
   const ENABLE_WEBP = false;
 
@@ -1224,7 +1323,7 @@ async function uploadMultipleImages(
       // Process the camera data directly (no more json.result)
       console.log("🎯 Camera data:", json);
 
-      processCameraData(json, image.uri, setUploads);
+      processCameraData(json, image.uri, setUploads, addToRecents);
     }
   } catch (error) {
     console.error(
