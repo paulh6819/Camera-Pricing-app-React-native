@@ -98,12 +98,8 @@ export default function Footer({
                         styles.currencyItemText,
                         selectedCurrency === currency.code && styles.currencyItemTextSelected
                       ]}>
-                        {currency.symbol} {currency.code} - {currency.name}
+                        {currency.symbol} {currency.code}
                       </Text>
-                      <Text style={[
-                        styles.currencyRegionText,
-                        selectedCurrency === currency.code && styles.currencyRegionTextSelected
-                      ]}>{currency.region}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -149,6 +145,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#ccc",
     alignItems: "center",
     marginBottom: 0,
+    marginTop: 20,
     position: "relative",
   },
   bottomRow: {
@@ -162,6 +159,7 @@ const styles = StyleSheet.create({
     position: "relative",
     zIndex: 1000,
     alignItems: "flex-start",
+    marginLeft: 10,
   },
   currencyButton: {
     flexDirection: "row",
@@ -202,44 +200,38 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "white",
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#e9ecef",
+    borderColor: "#ddd",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
-    maxHeight: 200,
+    shadowRadius: 4,
+    elevation: 4,
+    maxHeight: 160,
     zIndex: 1001,
+    minWidth: 100,
   },
   currencyList: {
-    maxHeight: 180,
+    maxHeight: 140,
   },
   currencyItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#eee",
   },
   currencyItemSelected: {
     backgroundColor: "#009688",
   },
   currencyItemText: {
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 13,
+    fontWeight: "500",
     color: "#333",
-  },
-  currencyRegionText: {
-    fontSize: 10,
-    color: "#666",
-    marginTop: 2,
+    textAlign: "center",
   },
   currencyItemTextSelected: {
     color: "white",
-  },
-  currencyRegionTextSelected: {
-    color: "#e0e0e0",
   },
   footerTitle: {
     fontSize: 14,
