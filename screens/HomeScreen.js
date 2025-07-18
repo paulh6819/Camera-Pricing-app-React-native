@@ -64,6 +64,39 @@ const HomeScreen = ({ navigation }) => {
     return `${currency.symbol}${convertedPrice}`;
   };
 
+  // Fetch exchange rates from external API
+  const fetchExchangeRates = async () => {
+    try {
+      console.log("💱 Fetching exchange rates...");
+
+      const response = await fetch(
+        "https://api.exchangerate-api.com/v4/latest/USD"
+      );
+      const data = await response.json();
+
+      console.log("💱 Exchange rates fetched:", data.rates);
+      setExchangeRates(data.rates);
+    } catch (error) {
+      console.error("❌ Error fetching exchange rates:", error);
+      // Fallback to approximate rates if API fails
+      setExchangeRates({
+        USD: 1.0,
+        EUR: 0.85,
+        GBP: 0.75,
+        JPY: 150.0,
+        CAD: 1.35,
+        AUD: 1.5,
+        MXN: 18.0,
+        BRL: 5.0,
+      });
+    }
+  };
+
+  // Fetch exchange rates on component mount
+  React.useEffect(() => {
+    fetchExchangeRates();
+  }, []);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
 

@@ -170,9 +170,8 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
     }
   };
 
-  // Fetch exchange rates and load recent results on component mount
+  // Load recent results on component mount
   React.useEffect(() => {
-    fetchExchangeRates();
     loadRecentResults();
 
     // Fade in the entire app on load
@@ -817,83 +816,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     fontWeight: "bold",
-  },
-  currencyContainer: {
-    width: "90%",
-    marginVertical: 10,
-    position: "relative",
-    zIndex: 1000,
-  },
-  currencyButton: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: "#f8f9fa",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#009688",
-    shadowColor: "#009688",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  currencyButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-  },
-  currencyArrow: {
-    fontSize: 12,
-    color: "#009688",
-    fontWeight: "bold",
-  },
-  currencyDropdown: {
-    position: "absolute",
-    top: 50,
-    left: 0,
-    right: 0,
-    backgroundColor: "white",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#e9ecef",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
-    maxHeight: 200,
-    zIndex: 1001,
-  },
-  currencyList: {
-    maxHeight: 180,
-  },
-  currencyItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  currencyItemSelected: {
-    backgroundColor: "#009688",
-  },
-  currencyItemText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-  },
-  currencyRegionText: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 2,
-  },
-  currencyItemTextSelected: {
-    color: "white",
-  },
-  currencyRegionTextSelected: {
-    color: "#e0e0e0",
   },
 });
 
