@@ -73,10 +73,20 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
     const currencies = [
       { code: "USD", symbol: "$", name: "US Dollar", region: "United States" },
       { code: "EUR", symbol: "€", name: "Euro", region: "Europe" },
-      { code: "GBP", symbol: "£", name: "British Pound", region: "United Kingdom" },
+      {
+        code: "GBP",
+        symbol: "£",
+        name: "British Pound",
+        region: "United Kingdom",
+      },
       { code: "JPY", symbol: "¥", name: "Japanese Yen", region: "Japan" },
       { code: "CAD", symbol: "C$", name: "Canadian Dollar", region: "Canada" },
-      { code: "AUD", symbol: "A$", name: "Australian Dollar", region: "Australia" },
+      {
+        code: "AUD",
+        symbol: "A$",
+        name: "Australian Dollar",
+        region: "Australia",
+      },
       { code: "MXN", symbol: "$", name: "Mexican Peso", region: "Mexico" },
       { code: "BRL", symbol: "R$", name: "Brazilian Real", region: "Brazil" },
     ];
@@ -394,7 +404,6 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
         </View>
       </View>
 
-
       <TouchableOpacity onPress={handlePickImage} style={styles.uploadButton}>
         <View style={styles.textContainer}>
           <Text style={styles.uploadText}>
@@ -537,7 +546,6 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
           </Text>
         </View>
       )} */}
-
 
       <CameraModeHelpModal
         visible={showInformationModelForSingleModeSwitch}
