@@ -26,10 +26,16 @@ import * as ImagePicker from "expo-image-picker";
 
 import * as Haptics from "expo-haptics";
 import { LoadingSymbol } from "./loadingSymbol";
-import Animated, { FadeIn, FadeOut, useSharedValue, withTiming, useAnimatedStyle } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+} from "react-native-reanimated";
 import CameraModeHelpModal from "./CameraModeHelpModal";
 import RecentResults from "./RecentResults";
-export default function ImageUploader() {
+export default function ImageUploader({ selectedCurrency, convertPrice }) {
   const [imageUri, setImageUri] = useState([]);
 
   const [allGames, setAllGames] = useState([]);
@@ -46,110 +52,36 @@ export default function ImageUploader() {
     showInformationModelForSingleModeSwitch,
     setShowInformationModelForSingleModeSwitch,
   ] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("USD");
-  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
-  const [exchangeRates, setExchangeRates] = useState({});
-  const [ratesLoading, setRatesLoading] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const opacity = useSharedValue(1);
-  
+  const appOpacity = useSharedValue(0); // Start invisible for app load fade-in
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
       opacity: opacity.value,
     };
   });
 
-  const currencies = [
-    { code: "USD", symbol: "$", name: "US Dollar", region: "United States" },
-    { code: "EUR", symbol: "€", name: "Euro", region: "Europe" },
-    {
-      code: "GBP",
-      symbol: "£",
-      name: "British Pound",
-      region: "United Kingdom",
-    },
-    { code: "JPY", symbol: "¥", name: "Japanese Yen", region: "Japan" },
-    { code: "CAD", symbol: "C$", name: "Canadian Dollar", region: "Canada" },
-    {
-      code: "AUD",
-      symbol: "A$",
-      name: "Australian Dollar",
-      region: "Australia",
-    },
-    { code: "MXN", symbol: "$", name: "Mexican Peso", region: "Mexico" },
-    { code: "BRL", symbol: "R$", name: "Brazilian Real", region: "Brazil" },
-  ];
+  const appAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: appOpacity.value,
+    };
+  });
 
   // Get current region based on selected currency
   const getCurrentRegion = () => {
+    const currencies = [
+      { code: "USD", symbol: "$", name: "US Dollar", region: "United States" },
+      { code: "EUR", symbol: "€", name: "Euro", region: "Europe" },
+      { code: "GBP", symbol: "£", name: "British Pound", region: "United Kingdom" },
+      { code: "JPY", symbol: "¥", name: "Japanese Yen", region: "Japan" },
+      { code: "CAD", symbol: "C$", name: "Canadian Dollar", region: "Canada" },
+      { code: "AUD", symbol: "A$", name: "Australian Dollar", region: "Australia" },
+      { code: "MXN", symbol: "$", name: "Mexican Peso", region: "Mexico" },
+      { code: "BRL", symbol: "R$", name: "Brazilian Real", region: "Brazil" },
+    ];
     const currency = currencies.find((c) => c.code === selectedCurrency);
     return currency ? currency.region : "United States";
-  };
-
-  // Fetch exchange rates from external API
-  const fetchExchangeRates = async () => {
-    try {
-      setRatesLoading(true);
-      console.log("💱 Fetching exchange rates...");
-
-      // Using exchangerate-api.com (free tier)
-      const response = await fetch(
-        "https://api.exchangerate-api.com/v4/latest/USD"
-      );
-      const data = await response.json();
-
-      console.log("💱 Exchange rates fetched:", data.rates);
-      setExchangeRates(data.rates);
-    } catch (error) {
-      console.error("❌ Error fetching exchange rates:", error);
-      // Fallback to approximate rates if API fails
-      setExchangeRates({
-        USD: 1.0,
-        EUR: 0.85,
-        GBP: 0.75,
-        JPY: 150.0,
-        CAD: 1.35,
-        AUD: 1.5,
-        MXN: 18.0,
-        BRL: 5.0,
-      });
-    } finally {
-      setRatesLoading(false);
-    }
-  };
-
-  // Convert USD price to selected currency
-  const convertPrice = (usdPrice, targetCurrency) => {
-    if (!usdPrice || usdPrice === "N/A" || !exchangeRates[targetCurrency])
-      return "N/A";
-
-    // Extract numeric value from price string (remove $ and handle ranges)
-    const priceStr = usdPrice.toString().replace(/[$,]/g, "");
-    const currency = currencies.find((c) => c.code === targetCurrency);
-    const rate = exchangeRates[targetCurrency];
-
-    if (!currency || !rate) return usdPrice;
-
-    // Handle price ranges like "$50 - $100"
-    if (priceStr.includes(" - ")) {
-      const [min, max] = priceStr.split(" - ");
-      const convertedMin = (parseFloat(min) * rate).toFixed(
-        targetCurrency === "JPY" ? 0 : 2
-      );
-      const convertedMax = (parseFloat(max) * rate).toFixed(
-        targetCurrency === "JPY" ? 0 : 2
-      );
-      return `${currency.symbol}${convertedMin} - ${currency.symbol}${convertedMax}`;
-    }
-
-    // Handle single price
-    const numericPrice = parseFloat(priceStr);
-    if (isNaN(numericPrice)) return usdPrice;
-
-    const convertedPrice = (numericPrice * rate).toFixed(
-      targetCurrency === "JPY" ? 0 : 2
-    );
-    return `${currency.symbol}${convertedPrice}`;
   };
 
   let gameRecognitionURL = "https://www.gamesighter.com";
@@ -174,28 +106,34 @@ export default function ImageUploader() {
   // Load recent results from storage
   const loadRecentResults = async () => {
     try {
-      const storedRecents = await AsyncStorage.getItem('recentCameraResults');
+      const storedRecents = await AsyncStorage.getItem("recentCameraResults");
       if (storedRecents) {
         const parsedRecents = JSON.parse(storedRecents);
         setRecents(parsedRecents);
-        console.log('📱 Loaded recent results from storage:', parsedRecents.length);
+        console.log(
+          "📱 Loaded recent results from storage:",
+          parsedRecents.length
+        );
       }
     } catch (error) {
-      console.error('❌ Error loading recent results:', error);
+      console.error("❌ Error loading recent results:", error);
     }
   };
 
   // Save recent results to storage
   const saveRecentResults = async (newRecents) => {
     try {
-      await AsyncStorage.setItem('recentCameraResults', JSON.stringify(newRecents));
-      console.log('💾 Saved recent results to storage:', newRecents.length);
+      await AsyncStorage.setItem(
+        "recentCameraResults",
+        JSON.stringify(newRecents)
+      );
+      console.log("💾 Saved recent results to storage:", newRecents.length);
     } catch (error) {
-      console.error('❌ Error saving recent results:', error);
+      console.error("❌ Error saving recent results:", error);
     }
   };
 
-  // Add new result to recents (keep last 10 results)
+  // Add new result to recents (keep last 100 results)
   const addToRecents = async (cameraResult) => {
     const newRecent = {
       id: Date.now().toString(),
@@ -204,19 +142,19 @@ export default function ImageUploader() {
       prices: {
         eBay: cameraResult.loosePrice,
         Amazon: cameraResult.cibPrice,
-        FacebookMarketplace: cameraResult.newPrice
+        FacebookMarketplace: cameraResult.newPrice,
       },
       information: cameraResult.information,
-      imageUri: cameraResult.imageUri || null
+      imageUri: cameraResult.imageUri || null,
     };
-    
+
     // Use functional update to avoid stale closure
-    setRecents(prevRecents => {
-      const updatedRecents = [newRecent, ...prevRecents].slice(0, 10); // Keep only last 10
-      
+    setRecents((prevRecents) => {
+      const updatedRecents = [newRecent, ...prevRecents].slice(0, 100); // Keep only last 100
+
       // Save to AsyncStorage
       saveRecentResults(updatedRecents);
-      
+
       return updatedRecents;
     });
   };
@@ -224,11 +162,11 @@ export default function ImageUploader() {
   // Clear all recent results
   const clearRecentResults = async () => {
     try {
-      await AsyncStorage.removeItem('recentCameraResults');
+      await AsyncStorage.removeItem("recentCameraResults");
       setRecents([]);
-      console.log('🗑️ Cleared all recent results');
+      console.log("🗑️ Cleared all recent results");
     } catch (error) {
-      console.error('❌ Error clearing recent results:', error);
+      console.error("❌ Error clearing recent results:", error);
     }
   };
 
@@ -236,6 +174,9 @@ export default function ImageUploader() {
   React.useEffect(() => {
     fetchExchangeRates();
     loadRecentResults();
+
+    // Fade in the entire app on load
+    appOpacity.value = withTiming(1, { duration: 600 });
   }, []);
 
   const onRefresh = useCallback(async () => {
@@ -418,7 +359,7 @@ export default function ImageUploader() {
   }
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, appAnimatedStyle]}>
       {/* Reset state button -> needs to be refactored into a new component */}
 
       <TouchableOpacity
@@ -575,7 +516,7 @@ export default function ImageUploader() {
           </TouchableOpacity>
 
           {/* Recent Results - Show when there are current uploads/results on screen */}
-          <RecentResults 
+          <RecentResults
             recents={recents}
             convertPrice={convertPrice}
             selectedCurrency={selectedCurrency}
@@ -598,50 +539,12 @@ export default function ImageUploader() {
         </View>
       )} */}
 
-      {/* Currency Exchange Footer */}
-      <View style={styles.footerContainer}>
-        <TouchableOpacity
-          style={styles.currencyButton}
-          onPress={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
-          onLongPress={() => fetchExchangeRates()}
-        >
-          <Text style={styles.currencyButtonText}>
-            {ratesLoading
-              ? "Loading..."
-              : `${
-                  currencies.find((c) => c.code === selectedCurrency)?.symbol
-                } ${selectedCurrency}`}
-          </Text>
-          <Text style={styles.dropdownArrow}>
-            {showCurrencyDropdown ? "▲" : "▼"}
-          </Text>
-        </TouchableOpacity>
-
-        {showCurrencyDropdown && (
-          <View style={styles.currencyDropdown}>
-            {currencies.map((currency) => (
-              <TouchableOpacity
-                key={currency.code}
-                style={styles.currencyOption}
-                onPress={() => {
-                  setSelectedCurrency(currency.code);
-                  setShowCurrencyDropdown(false);
-                }}
-              >
-                <Text style={styles.currencyOptionText}>
-                  {currency.symbol} {currency.code} - {currency.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
 
       <CameraModeHelpModal
         visible={showInformationModelForSingleModeSwitch}
         onClose={() => setShowInformationModelForSingleModeSwitch(false)}
       />
-    </View>
+    </Animated.View>
   );
 }
 
@@ -915,57 +818,82 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
-  footerContainer: {
-    position: "absolute",
-    bottom: -165,
-    left: 5,
+  currencyContainer: {
+    width: "90%",
+    marginVertical: 10,
+    position: "relative",
     zIndex: 1000,
   },
   currencyButton: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#009688",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    shadowColor: "#000",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#009688",
+    shadowColor: "#009688",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 4,
+    elevation: 2,
   },
   currencyButtonText: {
-    color: "white",
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "600",
-    marginRight: 4,
+    color: "#333",
   },
-  dropdownArrow: {
-    color: "white",
-    fontSize: 10,
+  currencyArrow: {
+    fontSize: 12,
+    color: "#009688",
+    fontWeight: "bold",
   },
   currencyDropdown: {
     position: "absolute",
-    bottom: 45,
+    top: 50,
     left: 0,
+    right: 0,
     backgroundColor: "white",
-    borderRadius: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 6,
-    minWidth: 200,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
+    maxHeight: 200,
+    zIndex: 1001,
   },
-  currencyOption: {
+  currencyList: {
+    maxHeight: 180,
+  },
+  currencyItem: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
   },
-  currencyOptionText: {
+  currencyItemSelected: {
+    backgroundColor: "#009688",
+  },
+  currencyItemText: {
     fontSize: 14,
+    fontWeight: "600",
     color: "#333",
+  },
+  currencyRegionText: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 2,
+  },
+  currencyItemTextSelected: {
+    color: "white",
+  },
+  currencyRegionTextSelected: {
+    color: "#e0e0e0",
   },
 });
 
@@ -978,7 +906,12 @@ if (
 }
 
 // Process camera data from LLM and add to UI
-function processCameraData(cameraData, imageUriForUI, setUploads, addToRecents = null) {
+function processCameraData(
+  cameraData,
+  imageUriForUI,
+  setUploads,
+  addToRecents = null
+) {
   if (!cameraData) {
     console.log("⚠️ No camera data available");
     return;

@@ -18,6 +18,51 @@ import * as Haptics from "expo-haptics";
 
 const HomeScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [exchangeRates, setExchangeRates] = useState({});
+
+  const currencies = [
+    { code: "USD", symbol: "$", name: "US Dollar", region: "United States" },
+    { code: "EUR", symbol: "€", name: "Euro", region: "Europe" },
+    { code: "GBP", symbol: "£", name: "British Pound", region: "United Kingdom" },
+    { code: "JPY", symbol: "¥", name: "Japanese Yen", region: "Japan" },
+    { code: "CAD", symbol: "C$", name: "Canadian Dollar", region: "Canada" },
+    { code: "AUD", symbol: "A$", name: "Australian Dollar", region: "Australia" },
+    { code: "MXN", symbol: "$", name: "Mexican Peso", region: "Mexico" },
+    { code: "BRL", symbol: "R$", name: "Brazilian Real", region: "Brazil" },
+  ];
+
+  // Convert USD price to selected currency
+  const convertPrice = (usdPrice, targetCurrency) => {
+    if (!usdPrice || usdPrice === "N/A" || !exchangeRates[targetCurrency])
+      return "N/A";
+
+    const priceStr = usdPrice.toString().replace(/[$,]/g, "");
+    const currency = currencies.find((c) => c.code === targetCurrency);
+    const rate = exchangeRates[targetCurrency];
+
+    if (!currency || !rate) return usdPrice;
+
+    if (priceStr.includes(" - ")) {
+      const [min, max] = priceStr.split(" - ");
+      const convertedMin = (parseFloat(min) * rate).toFixed(
+        targetCurrency === "JPY" ? 0 : 2
+      );
+      const convertedMax = (parseFloat(max) * rate).toFixed(
+        targetCurrency === "JPY" ? 0 : 2
+      );
+      return `${currency.symbol}${convertedMin} - ${currency.symbol}${convertedMax}`;
+    }
+
+    const numericPrice = parseFloat(priceStr);
+    if (isNaN(numericPrice)) return usdPrice;
+
+    const convertedPrice = (numericPrice * rate).toFixed(
+      targetCurrency === "JPY" ? 0 : 2
+    );
+    return `${currency.symbol}${convertedPrice}`;
+  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -64,9 +109,21 @@ const HomeScreen = ({ navigation }) => {
             Get Instant Camera Valuations: Upload a Photo or Use Your Phone’s
             Camera Now!
           </Text>
-          <ImageUploader />
+          <ImageUploader 
+            selectedCurrency={selectedCurrency}
+            convertPrice={convertPrice}
+          />
         </View>
-        <Footer navigation={navigation} />
+        <Footer 
+          navigation={navigation}
+          selectedCurrency={selectedCurrency}
+          setSelectedCurrency={setSelectedCurrency}
+          showCurrencyDropdown={showCurrencyDropdown}
+          setShowCurrencyDropdown={setShowCurrencyDropdown}
+          currencies={currencies}
+          exchangeRates={exchangeRates}
+          setExchangeRates={setExchangeRates}
+        />
       </ScrollView>
     </View>
   );
