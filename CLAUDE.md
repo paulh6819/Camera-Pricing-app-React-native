@@ -115,7 +115,7 @@ npm install --legacy-peer-deps
 - Haptic feedback implementations vary by platform
 
 ### Data Persistence
-- Recent results stored in AsyncStorage with 100-item limit
+- Recent results stored in AsyncStorage with 1000-item limit
 - Currency preferences persist between sessions
 - App state includes protection against stale closures in async operations
 
