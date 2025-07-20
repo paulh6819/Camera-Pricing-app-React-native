@@ -143,7 +143,7 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
     }
   };
 
-  // Add new result to recents (keep last 100 results)
+  // Add new result to recents (keep last 1000 results)
   const addToRecents = async (cameraResult) => {
     const newRecent = {
       id: Date.now().toString(),
@@ -160,7 +160,7 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
 
     // Use functional update to avoid stale closure
     setRecents((prevRecents) => {
-      const updatedRecents = [newRecent, ...prevRecents].slice(0, 100); // Keep only last 100
+      const updatedRecents = [newRecent, ...prevRecents].slice(0, 1000); // Keep only last 1000
 
       // Save to AsyncStorage
       saveRecentResults(updatedRecents);
@@ -496,41 +496,41 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
       </ScrollView>
 
       {(uploads.length > 0 || isClearing) && (
-        <Animated.View style={animatedStyle}>
-          <TouchableOpacity
-            style={styles.clearButton}
-            onPress={async () => {
-              await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-              // Start clearing animation
-              setIsClearing(true);
-              opacity.value = withTiming(0, { duration: 800 });
+            // Start clearing animation
+            setIsClearing(true);
+            opacity.value = withTiming(0, { duration: 800 });
 
-              // Wait for animation to complete before clearing state
-              setTimeout(() => {
-                // Fully reset ALL state
-                setAllGames([]);
-                setUploads([]);
-                setImageUri([]);
-                setTotalUsedValue(0);
-                setTotalNewValue(0);
-                setTotalCIBValue(0);
-                setIsClearing(false);
-                opacity.value = 1; // Reset opacity for next time
-              }, 800); // 800ms fade duration
-            }}
-          >
-            <Text style={styles.clearButtonText}>Clear Current Results</Text>
-          </TouchableOpacity>
+            // Wait for animation to complete before clearing state
+            setTimeout(() => {
+              // Fully reset ALL state
+              setAllGames([]);
+              setUploads([]);
+              setImageUri([]);
+              setTotalUsedValue(0);
+              setTotalNewValue(0);
+              setTotalCIBValue(0);
+              setIsClearing(false);
+              opacity.value = 1; // Reset opacity for next time
+            }, 800); // 800ms fade duration
+          }}
+        >
+          <Text style={styles.clearButtonText}>Clear Current Results</Text>
+        </TouchableOpacity>
+      )}
 
-          {/* Recent Results - Show when there are current uploads/results on screen */}
-          <RecentResults
-            recents={recents}
-            convertPrice={convertPrice}
-            selectedCurrency={selectedCurrency}
-            clearRecentResults={clearRecentResults}
-          />
-        </Animated.View>
+      {/* Recent Results - Show when there are current uploads/results on screen */}
+      {(uploads.length > 0 || isClearing) && (
+        <RecentResults
+          recents={recents}
+          convertPrice={convertPrice}
+          selectedCurrency={selectedCurrency}
+          clearRecentResults={clearRecentResults}
+        />
       )}
 
       {/* {uploads.length > 0 && (
@@ -580,6 +580,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginBottom: 16,
     marginTop: 80,
+    alignSelf: "center",
 
     borderWidth: 3, // Thick border to simulate pixels
     borderColor: "#000", // Black outer border for contrast

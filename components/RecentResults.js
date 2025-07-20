@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from "react-native";
 
-export default function RecentResults({ recents, convertPrice, selectedCurrency, clearRecentResults }) {
+export default function RecentResults({ recents, convertPrice, selectedCurrency, clearRecentResults, removeRecentResult }) {
   const [showRecentResults, setShowRecentResults] = useState(true); // Default to showing results
 
   if (!recents || recents.length === 0) {
@@ -32,6 +32,12 @@ export default function RecentResults({ recents, convertPrice, selectedCurrency,
         <ScrollView style={styles.recentResultsList} nestedScrollEnabled={true}>
           {recents.slice(0, 5).map((recent) => (
             <View key={recent.id} style={styles.recentResultItem}>
+              <TouchableOpacity 
+                style={styles.removeButton}
+                onPress={() => removeRecentResult(recent.id)}
+              >
+                <Text style={styles.removeButtonText}>×</Text>
+              </TouchableOpacity>
               <Text style={styles.recentCameraName}>{recent.camera}</Text>
               <Text style={styles.recentTimestamp}>
                 {new Date(recent.timestamp).toLocaleDateString()}
@@ -105,6 +111,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e9ecef",
     backgroundColor: "white",
+    position: "relative",
+  },
+  removeButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#FF4757",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+  },
+  removeButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    lineHeight: 16,
   },
   recentCameraName: {
     fontSize: 16,

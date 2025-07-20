@@ -92,6 +92,13 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  // Remove individual recent result
+  const removeRecentResult = (resultId) => {
+    // This function will be passed to ImageUploader which will handle the actual removal
+    // since it manages the recents state
+    console.log("Requesting removal of recent result:", resultId);
+  };
+
   // Fetch exchange rates on component mount
   React.useEffect(() => {
     fetchExchangeRates();
