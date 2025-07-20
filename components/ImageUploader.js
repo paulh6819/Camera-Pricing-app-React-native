@@ -180,9 +180,65 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
     }
   };
 
-  // Load recent results on component mount
+  // Remove a specific recent result
+  const removeRecentResult = async (id) => {
+    try {
+      // Find the result to get its image URI before removing it
+      const resultToRemove = recents.find(recent => recent.id === id);
+      
+      // If the result has an image, try to delete the file
+      if (resultToRemove && resultToRemove.imageUri) {
+        try {
+          await FileSystem.deleteAsync(resultToRemove.imageUri, { idempotent: true });
+          console.log("🗑️ Deleted image file:", resultToRemove.imageUri);
+        } catch (imageError) {
+          console.error("❌ Error deleting image file:", imageError);
+        }
+      }
+      
+      // Use functional update to avoid stale closure
+      setRecents((prevRecents) => {
+        const updatedRecents = prevRecents.filter(recent => recent.id !== id);
+        
+        // Save to AsyncStorage
+        saveRecentResults(updatedRecents);
+        
+        return updatedRecents;
+      });
+      
+      console.log("🗑️ Removed recent result with id:", id);
+    } catch (error) {
+      console.error("❌ Error removing recent result:", error);
+    }
+  };
+
+  // Load single camera mode setting from storage
+  const loadSingleCameraMode = async () => {
+    try {
+      const savedMode = await AsyncStorage.getItem("singleCameraMode");
+      if (savedMode !== null) {
+        setSingleCameraMode(JSON.parse(savedMode));
+        console.log("📱 Loaded single camera mode:", JSON.parse(savedMode));
+      }
+    } catch (error) {
+      console.error("❌ Error loading single camera mode:", error);
+    }
+  };
+
+  // Save single camera mode setting to storage
+  const saveSingleCameraMode = async (mode) => {
+    try {
+      await AsyncStorage.setItem("singleCameraMode", JSON.stringify(mode));
+      console.log("💾 Saved single camera mode:", mode);
+    } catch (error) {
+      console.error("❌ Error saving single camera mode:", error);
+    }
+  };
+
+  // Load recent results and settings on component mount
   React.useEffect(() => {
     loadRecentResults();
+    loadSingleCameraMode();
 
     // Fade in the entire app on load
     appOpacity.value = withTiming(1, { duration: 600 });
@@ -357,7 +413,26 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
 
     setUploads((prevUploads) => {
       const updatedUploads = [...prevUploads];
-      updatedUploads[uploadIndex].games.splice(gameIndex, 1); // Remove the game
+      const upload = updatedUploads[uploadIndex];
+      
+      // Remove the game
+      updatedUploads[uploadIndex].games.splice(gameIndex, 1);
+      
+      // If this was the last game in the upload, delete the image file and remove the entire upload
+      if (updatedUploads[uploadIndex].games.length === 0) {
+        if (upload.imageKey) {
+          FileSystem.deleteAsync(upload.imageKey, { idempotent: true })
+            .then(() => {
+              console.log("🗑️ Deleted image file:", upload.imageKey);
+            })
+            .catch((error) => {
+              console.error("❌ Error deleting image file:", error);
+            });
+        }
+        // Remove the entire upload entry
+        updatedUploads.splice(uploadIndex, 1);
+      }
+      
       return updatedUploads;
     });
 
@@ -391,7 +466,10 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
         <View style={styles.toggleControlsContainer}>
           <Switch
             value={singleCameraMode}
-            onValueChange={setSingleCameraMode}
+            onValueChange={(value) => {
+              setSingleCameraMode(value);
+              saveSingleCameraMode(value);
+            }}
             trackColor={{ false: "#767577", true: "#009688" }}
             thumbColor={singleCameraMode ? "#7FFBD2" : "#f4f3f4"}
           />
@@ -530,6 +608,7 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
           convertPrice={convertPrice}
           selectedCurrency={selectedCurrency}
           clearRecentResults={clearRecentResults}
+          removeRecentResult={removeRecentResult}
         />
       )}
 
