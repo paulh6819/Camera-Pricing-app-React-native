@@ -45,7 +45,7 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
   const [totalCIBValue, setTotalCIBValue] = useState(0);
   const [useCamera, setUseCamera] = useState(false);
   const [uploads, setUploads] = useState([]);
-  const [pullCount, setPullcount] = useState(0);
+  const [, setPullcount] = useState(0);
   const [recents, setRecents] = useState([]);
   const [singleCameraMode, setSingleCameraMode] = useState(true);
   const [
@@ -391,11 +391,14 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
           addToRecents
         );
       }
-      setPullcount((prev) => prev + 1);
-      console.log("this is the pullcount", pullCount);
-      if (pullCount === 2) {
-        askForReview();
-      }
+      setPullcount((prev) => {
+        const newCount = prev + 1;
+        console.log("this is the pullcount", newCount);
+        if (newCount === 7) {
+          askForReview();
+        }
+        return newCount;
+      });
     } catch (error) {
       console.error("Error picking image: ", error);
     }
