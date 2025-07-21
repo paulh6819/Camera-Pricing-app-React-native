@@ -35,6 +35,7 @@ import Animated, {
 } from "react-native-reanimated";
 import CameraModeHelpModal from "./CameraModeHelpModal";
 import RecentResults from "./RecentResults";
+import CameraSearchBar from "./CameraSearchBar";
 export default function ImageUploader({ selectedCurrency, convertPrice }) {
   const [imageUri, setImageUri] = useState([]);
 
@@ -96,12 +97,12 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
 
   let gameRecognitionURL = "https://www.gamesighter.com";
 
-  //comment this below in when i am testing serverside logic
-  // if (Platform.OS === "android") {
-  //   gameRecognitionURL = "http://10.0.2.2:4200";
-  // } else {
-  //   gameRecognitionURL = "http://localhost:4200";
-  // }
+  // comment this below in when i am testing serverside logic
+  if (Platform.OS === "android") {
+    gameRecognitionURL = "http://10.0.2.2:4200";
+  } else {
+    gameRecognitionURL = "http://localhost:4200";
+  }
 
   if (Constants.executionEnvironment !== "storeClient") {
     console.log(
@@ -184,32 +185,45 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
   const removeRecentResult = async (id) => {
     try {
       // Find the result to get its image URI before removing it
-      const resultToRemove = recents.find(recent => recent.id === id);
-      
+      const resultToRemove = recents.find((recent) => recent.id === id);
+
       // If the result has an image, try to delete the file
       if (resultToRemove && resultToRemove.imageUri) {
         try {
-          await FileSystem.deleteAsync(resultToRemove.imageUri, { idempotent: true });
+          await FileSystem.deleteAsync(resultToRemove.imageUri, {
+            idempotent: true,
+          });
           console.log("🗑️ Deleted image file:", resultToRemove.imageUri);
         } catch (imageError) {
           console.error("❌ Error deleting image file:", imageError);
         }
       }
-      
+
       // Use functional update to avoid stale closure
       setRecents((prevRecents) => {
-        const updatedRecents = prevRecents.filter(recent => recent.id !== id);
-        
+        const updatedRecents = prevRecents.filter((recent) => recent.id !== id);
+
         // Save to AsyncStorage
         saveRecentResults(updatedRecents);
-        
+
         return updatedRecents;
       });
-      
+
       console.log("🗑️ Removed recent result with id:", id);
     } catch (error) {
       console.error("❌ Error removing recent result:", error);
     }
+  };
+
+  // Handle camera found from search
+  const handleCameraFound = (cameraObject) => {
+    // Add to uploads state for UI rendering
+    setUploads((prev) => [
+      { imageKey: null, games: [cameraObject] }, // No image key for text searches
+      ...prev,
+    ]);
+
+    console.log("✅ Camera data added to uploads from search");
   };
 
   // Load single camera mode setting from storage
@@ -417,10 +431,10 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
     setUploads((prevUploads) => {
       const updatedUploads = [...prevUploads];
       const upload = updatedUploads[uploadIndex];
-      
+
       // Remove the game
       updatedUploads[uploadIndex].games.splice(gameIndex, 1);
-      
+
       // If this was the last game in the upload, delete the image file and remove the entire upload
       if (updatedUploads[uploadIndex].games.length === 0) {
         if (upload.imageKey) {
@@ -435,7 +449,7 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
         // Remove the entire upload entry
         updatedUploads.splice(uploadIndex, 1);
       }
-      
+
       return updatedUploads;
     });
 
@@ -494,6 +508,14 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
           </Text>
         </View>
       </TouchableOpacity>
+
+      <CameraSearchBar
+        onCameraFound={handleCameraFound}
+        selectedCurrency={selectedCurrency}
+        convertPrice={convertPrice}
+        addToRecents={addToRecents}
+      />
+
       <View style={styles.loadingSymbolContainer}>
         {loading && <LoadingSymbol />}
       </View>
@@ -523,11 +545,13 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
       >
         <Animated.View style={animatedStyle}>
           {uploads.map((item, index) => (
-            <View key={item.imageKey + index}>
-              <Image
-                source={{ uri: item.imageKey }}
-                style={styles.uploadImageMappedToResults}
-              />
+            <View key={(item.imageKey || "search") + index}>
+              {item.imageKey && (
+                <Image
+                  source={{ uri: item.imageKey }}
+                  style={styles.uploadImageMappedToResults}
+                />
+              )}
               {item.games.map((game, gameIndex) => (
                 <Animated.View
                   key={`${game.title}-${gameIndex}`}
@@ -840,7 +864,7 @@ const styles = StyleSheet.create({
     height: 60,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 30,
+    borderRadius: 10,
     backgroundColor: "#009688",
     shadowColor: "#009688",
     shadowOffset: { width: 0, height: 8 },
