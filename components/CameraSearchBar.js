@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Platform,
   Alert,
+  Dimensions,
 } from "react-native";
 import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
@@ -20,6 +21,10 @@ export default function CameraSearchBar({
 }) {
   const [searchText, setSearchText] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  
+  // Detect screen size for small phone optimizations
+  const screenHeight = Dimensions.get('window').height;
+  const isSmallScreen = screenHeight < 700;
 
   // Get current region based on selected currency
   const getCurrentRegion = () => {
@@ -119,7 +124,7 @@ export default function CameraSearchBar({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isSmallScreen && styles.containerSmall]}>
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -166,40 +171,88 @@ function processCameraSearchData(cameraData, onCameraFound, addToRecents) {
     JSON.stringify(cameraData, null, 2)
   );
 
-  // Extract and parse the JSON from the result field
+  // Extract and parse the JSON from the result field with robust parsing
   let actualCameraData;
-  try {
-    // The result field contains markdown-wrapped JSON
-    const resultString = cameraData.result || "";
-    console.log("🔍 Raw search result string:", resultString);
+  const resultString = cameraData.result || "";
+  console.log("🔍 Raw search result string:", resultString);
 
-    // Remove markdown code blocks
-    const jsonString = resultString
-      .replace(/```json\n?/g, "")
-      .replace(/\n?```/g, "");
-    console.log("🔍 Cleaned search JSON string:", jsonString);
+  // Try multiple parsing strategies
+  const parseStrategies = [
+    // Strategy 1: Direct JSON parsing (for plain JSON responses)
+    () => {
+      console.log("🔄 Trying direct JSON parsing...");
+      return JSON.parse(resultString);
+    },
+    
+    // Strategy 2: Remove markdown code blocks (current approach, enhanced)
+    () => {
+      console.log("🔄 Trying markdown removal...");
+      const jsonString = resultString
+        .replace(/```(?:json|javascript|js)?\s*\n?/g, "") // Handle various code block types
+        .replace(/\n?\s*```/g, "") // Remove closing blocks
+        .trim(); // Remove extra whitespace
+      console.log("🔍 Cleaned search JSON string:", jsonString);
+      return JSON.parse(jsonString);
+    },
+    
+    // Strategy 3: Extract JSON from anywhere in the string
+    () => {
+      console.log("🔄 Trying JSON extraction...");
+      const jsonMatch = resultString.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+      throw new Error("No JSON object found in response");
+    }
+  ];
 
-    // Parse the JSON
-    actualCameraData = JSON.parse(jsonString);
-    console.log(
-      "🔍 Parsed actual camera search data:",
-      JSON.stringify(actualCameraData, null, 2)
-    );
-  } catch (error) {
-    console.error("❌ Failed to parse camera search data:", error);
-    actualCameraData = {}; // Fallback to empty object
+  // Try each strategy until one works
+  for (let i = 0; i < parseStrategies.length; i++) {
+    try {
+      actualCameraData = parseStrategies[i]();
+      console.log(`✅ Strategy ${i + 1} succeeded:`, JSON.stringify(actualCameraData, null, 2));
+      break;
+    } catch (error) {
+      console.log(`❌ Strategy ${i + 1} failed:`, error.message);
+      if (i === parseStrategies.length - 1) {
+        // All strategies failed
+        console.error("❌ All parsing strategies failed for camera search data");
+        Alert.alert(
+          "Search Error", 
+          "Received invalid response from server. Please try again."
+        );
+        return; // Exit early instead of showing "Unknown Camera"
+      }
+    }
+  }
+
+  // Validate that we have the expected data structure
+  if (!actualCameraData || typeof actualCameraData !== 'object') {
+    console.error("❌ Parsed data is not a valid object:", actualCameraData);
+    Alert.alert("Search Error", "Invalid camera data received. Please try again.");
+    return;
+  }
+
+  // Validate required fields and provide meaningful fallbacks
+  const cameraName = actualCameraData.camera || actualCameraData.name || "Unknown Camera";
+  const pricingData = actualCameraData.estimated_resale_value || {};
+  const cameraInfo = actualCameraData.camera_information || {};
+
+  // Warn if critical data is missing but continue with fallbacks
+  if (!actualCameraData.camera && !actualCameraData.name) {
+    console.warn("⚠️ No camera name found in response");
+  }
+  if (!actualCameraData.estimated_resale_value) {
+    console.warn("⚠️ No pricing data found in response");
   }
 
   const cameraObject = {
-    title: actualCameraData.camera || "Unknown Camera",
+    title: cameraName,
     system: "Camera Information",
-    loosePrice: actualCameraData.estimated_resale_value?.eBay || "N/A",
-    cibPrice: actualCameraData.estimated_resale_value?.Amazon || "N/A",
-    newPrice:
-      actualCameraData.estimated_resale_value?.Facebook_Marketplace || "N/A",
-    information:
-      actualCameraData.camera_information?.information ||
-      "No information available",
+    loosePrice: pricingData.eBay || pricingData.ebay || "N/A",
+    cibPrice: pricingData.Amazon || pricingData.amazon || "N/A",
+    newPrice: pricingData.Facebook_Marketplace || pricingData.facebook_marketplace || "N/A",
+    information: cameraInfo.information || cameraInfo.description || "No information available",
     imageUri: null, // No image for text searches
   };
 
@@ -267,5 +320,11 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginTop: 10,
     paddingLeft: 40,
+  },
+  
+  // Small screen optimizations (for phones with height < 700px)  
+  containerSmall: {
+    marginVertical: 8, // Restore comfortable spacing
+    paddingHorizontal: 20,
   },
 });

@@ -21,6 +21,7 @@ import {
   Alert,
   RefreshControl,
   Switch,
+  Dimensions,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
@@ -38,6 +39,10 @@ import RecentResults from "./RecentResults";
 import CameraSearchBar from "./CameraSearchBar";
 export default function ImageUploader({ selectedCurrency, convertPrice }) {
   const [imageUri, setImageUri] = useState([]);
+
+  // Detect screen size for small phone optimizations
+  const screenHeight = Dimensions.get("window").height;
+  const isSmallScreen = screenHeight < 700; // Phones like iPhone SE, iPhone 8, etc.
 
   const [allGames, setAllGames] = useState([]);
   const [totalUsedValue, setTotalUsedValue] = useState(0);
@@ -460,7 +465,13 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
   }
 
   return (
-    <Animated.View style={[styles.container, appAnimatedStyle]}>
+    <Animated.View
+      style={[
+        styles.container,
+        isSmallScreen && styles.containerSmall,
+        appAnimatedStyle,
+      ]}
+    >
       {/* Reset state button -> needs to be refactored into a new component */}
 
       <TouchableOpacity
@@ -471,12 +482,17 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
         }}
       >
         <Image
-          style={styles.sightIcon}
+          style={[styles.sightIcon, isSmallScreen && styles.sightIconSmall]}
           source={require("../assets/icons/cameraIcon.png")}
         />
       </TouchableOpacity>
 
-      <View style={styles.toggleContainer}>
+      <View
+        style={[
+          styles.toggleContainer,
+          isSmallScreen && styles.toggleContainerSmall,
+        ]}
+      >
         <Text style={styles.toggleLabel}>
           {singleCameraMode ? "Price Single Camera" : "Price Multiple Cameras"}
         </Text>
@@ -499,7 +515,10 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
         </View>
       </View>
 
-      <TouchableOpacity onPress={handlePickImage} style={styles.uploadButton}>
+      <TouchableOpacity
+        onPress={handlePickImage}
+        style={[styles.uploadButton, isSmallScreen && styles.uploadButtonSmall]}
+      >
         <View style={styles.textContainer}>
           <Text style={styles.uploadText}>
             {singleCameraMode
@@ -781,7 +800,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     marginBottom: 16,
-    marginTop: 96,
+    marginTop: 16,
     borderRadius: 4,
   },
   flatListContainer: {
@@ -931,6 +950,26 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     fontWeight: "bold",
+  },
+
+  // Small screen optimizations (for phones with height < 700px)
+  sightIconSmall: {
+    width: 120,
+    height: 120,
+    marginBottom: 8,
+    marginTop: 0, // Eliminate almost all top margin
+  },
+  toggleContainerSmall: {
+    marginVertical: 3,
+    paddingVertical: 10, // Restore comfortable padding
+  },
+  uploadButtonSmall: {
+    marginTop: 12,
+    height: 55, // Restore comfortable button height
+  },
+  containerSmall: {
+    justifyContent: "flex-start", // Pack everything towards the top instead of spacing around
+    paddingTop: 0, // Small controlled padding from top
   },
 });
 
