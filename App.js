@@ -7,6 +7,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import uuid from "react-native-uuid";
 import Purchases, { LOG_LEVEL } from "react-native-purchases";
+import * as Updates from "expo-updates";
 
 // Import the screens
 import HomeScreen from "./screens/HomeScreen";
@@ -56,6 +57,38 @@ export default function App() {
 
     loadFonts();
   }, []);
+
+  // OTA Update checking
+  useEffect(() => {
+    async function checkForUpdates() {
+      try {
+        // Only check for updates in production builds
+        if (!__DEV__ && Updates.isEnabled) {
+          console.log("🔄 Checking for OTA updates...");
+          
+          const update = await Updates.checkForUpdateAsync();
+          
+          if (update.isAvailable) {
+            console.log("📦 Update available! Downloading...");
+            await Updates.fetchUpdateAsync();
+            console.log("✅ Update downloaded! Reloading app...");
+            await Updates.reloadAsync();
+          } else {
+            console.log("✅ App is up to date!");
+          }
+        } else {
+          console.log("🔧 Development mode - skipping update check");
+        }
+      } catch (error) {
+        console.error("❌ Error checking for updates:", error);
+      }
+    }
+
+    // Check for updates after fonts are loaded
+    if (fontsLoaded) {
+      checkForUpdates();
+    }
+  }, [fontsLoaded]);
 
 
   if (!fontsLoaded) {

@@ -8,6 +8,7 @@ import {
   Animated,
   Platform,
   StyleSheet,
+  Dimensions,
 } from "react-native";
 import ImageUploader from "../components/ImageUploader";
 import Footer from "../components/Footer";
@@ -21,6 +22,10 @@ const HomeScreen = ({ navigation }) => {
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [exchangeRates, setExchangeRates] = useState({});
+
+  // Detect screen size for small phone optimizations
+  const screenHeight = Dimensions.get('window').height;
+  const isSmallScreen = screenHeight < 700;
 
   const currencies = [
     { code: "USD", symbol: "$", name: "US Dollar", region: "United States" },
@@ -122,8 +127,8 @@ const HomeScreen = ({ navigation }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.container}>
-          <View style={styles.navigation}>
+        <View style={[styles.container, isSmallScreen && styles.containerSmall]}>
+          <View style={[styles.navigation, isSmallScreen && styles.navigationSmall]}>
             <TouchableOpacity style={styles.buttonStyle1}>
               <Text style={styles.buttonText1}>Home</Text>
             </TouchableOpacity>
@@ -144,8 +149,8 @@ const HomeScreen = ({ navigation }) => {
             )} */}
           </View>
 
-          <Text style={styles.mainTitle}>CamPricer</Text>
-          <Text style={styles.subTitle}>
+          <Text style={[styles.mainTitle, isSmallScreen && styles.mainTitleSmall]}>CamPricer</Text>
+          <Text style={[styles.subTitle, isSmallScreen && styles.subTitleSmall]}>
             Get Instant Camera Valuations: Upload a Photo or Use Your Phone’s
             Camera Now!
           </Text>
@@ -231,6 +236,24 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     width: "100%",
+  },
+
+  // Small screen optimizations (for phones with height < 700px)
+  containerSmall: {
+    padding: 10, // Reduce padding
+  },
+  navigationSmall: {
+    marginBottom: 5, // Reduce margin
+    padding: 4, // Reduce padding
+  },
+  mainTitleSmall: {
+    marginTop: 20, // Much less top margin (was 64)
+    fontSize: 28, // Slightly smaller
+    marginBottom: 5, // Less bottom margin
+  },
+  subTitleSmall: {
+    fontSize: 13, // Slightly smaller
+    marginBottom: 10, // Add small bottom margin
   },
 });
 

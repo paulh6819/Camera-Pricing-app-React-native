@@ -6,7 +6,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "release-ios": "eas build --platform ios --non-interactive && eas submit --platform ios --latest --non-interactive",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "update:production": "eas update --branch production --message",
+    "update:staging": "eas update --branch staging --message",
+    "update:preview": "eas update --branch preview --message"
   },
   "keywords": [],
   "author": "",
