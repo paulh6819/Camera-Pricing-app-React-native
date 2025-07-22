@@ -98,11 +98,11 @@ export default function ImageUploader({ selectedCurrency, convertPrice }) {
   let gameRecognitionURL = "https://www.gamesighter.com";
 
   // comment this below in when i am testing serverside logic
-  if (Platform.OS === "android") {
-    gameRecognitionURL = "http://10.0.2.2:4200";
-  } else {
-    gameRecognitionURL = "http://localhost:4200";
-  }
+  // if (Platform.OS === "android") {
+  //   gameRecognitionURL = "http://10.0.2.2:4200";
+  // } else {
+  //   gameRecognitionURL = "http://localhost:4200";
+  // }
 
   if (Constants.executionEnvironment !== "storeClient") {
     console.log(

@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
+import { LoadingSymbol } from "./loadingSymbol";
 
 export default function CameraSearchBar({
   onCameraFound,
@@ -144,6 +145,11 @@ export default function CameraSearchBar({
           )}
         </TouchableOpacity>
       </View>
+      {isSearching && (
+        <View style={styles.loadingContainer}>
+          <LoadingSymbol />
+        </View>
+      )}
     </View>
   );
 }
@@ -256,5 +262,10 @@ const styles = StyleSheet.create({
   magnifyingGlass: {
     fontSize: 32,
     color: "white",
+  },
+  loadingContainer: {
+    alignItems: "flex-start",
+    marginTop: 10,
+    paddingLeft: 40,
   },
 });
